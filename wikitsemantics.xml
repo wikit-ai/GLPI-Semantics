@@ -1,0 +1,36 @@
+<root>
+   <name>Wikit Semantics</name>
+   <key>wikitsemantics</key>
+   <state>beta</state>
+   <state>stable</state>
+   <logo>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/logo-wikit-blue.png</logo>
+   <description>
+      <short>
+         <en>Wikit Semantics GLPI plugin.</en>
+         <fr>Plugin GLPI Wikit Semantics</fr>
+      </short>
+      <long>
+         <en>This plugin enhances your GLPI with text generation features!</en>
+         <fr>Ce plugin augmente votre GLPI avec des fonctionnalités de génération de texte !</fr>
+      </long>
+   </description>
+   <homepage>https://github.com/wikit-ai/GLPI-Semantics</homepage>
+   <download>https://github.com/wikit-ai/GLPI-Semantics/releases</download>
+   <issues>https://github.com/wikit-ai/GLPI-Semantics/issues</issues>
+   <readme>https://github.com/wikit-ai/GLPI-Semantics/README.md</readme>
+   <authors>
+      <author>Wikit</author>
+   </authors>
+   <versions>
+      <version>
+         <num>1.0.0</num>
+         <compatibility>~10.0.11</compatibility>
+         <download_url></download_url>
+      </version>
+   </versions>
+   <langs>
+      <lang>en_GB</lang>
+      <lang>fr_FR</lang>
+   </langs>
+   <license>Apache V2.0</license>
+</root>

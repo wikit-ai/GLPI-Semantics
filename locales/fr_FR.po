@@ -1,0 +1,91 @@
+# French translations for GLPI - Wikitsemantics package
+# Traductions françaises du paquet GLPI - Wikitsemantics.
+# Copyright (C) 2025 Wikit
+# This file is distributed under the same license as the GLPI - Wikit semantics package.
+# Mael Allé <mael@wikit.ai>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: GLPI - Wikitsemantics 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-17 22:39+0100\n"
+"PO-Revision-Date: 2025-11-17 22:57+0100\n"
+"Last-Translator: Mael Allé <mael@wikit.ai>\n"
+"Language-Team: French <traduc@traduc.org>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ajax/generateanswer.php:26
+msgid "Add to ticket"
+msgstr "Ajouter au ticket"
+
+#: ajax/generateanswer.php:35 ajax/generateanswer.php:51
+msgid "Close"
+msgstr "Fermer"
+
+#: ajax/generateanswer.php:46
+msgid ""
+"GLPI encountered a problem connecting to the Wikit Semantics application. "
+"Please try again later."
+msgstr ""
+"GLPI a rencontré un problème de connexion à l'application Wikit Semantics. "
+"Veuillez réessayer plus tard."
+
+#: front/config.form.php:27
+msgid "Wikitsemantics"
+msgstr "Wikit Semantics"
+
+#: inc/config.class.php:56
+msgid "Configuration API"
+msgstr "Configuration de l'API"
+
+#: inc/config.class.php:101
+msgid "Wikitsemantics configuration"
+msgstr "Configuration Wikit Semantics"
+
+#: inc/config.class.php:107
+msgid "Wikit Semantics URL base"
+msgstr "URL de base Wikit Semantics"
+
+#: inc/config.class.php:115
+msgid "Organization ID"
+msgstr "ID de l'organisation"
+
+#: inc/config.class.php:123
+msgid "Application ID"
+msgstr "ID de l'application"
+
+#: inc/config.class.php:131
+msgid "API key"
+msgstr "Clé API"
+
+#: inc/config.class.php:144
+msgid "Test connection"
+msgstr "Tester la connexion"
+
+#: inc/config.class.php:171
+msgid "Connection Failed"
+msgstr "Échec de la connexion"
+
+#: inc/config.class.php:176
+msgid "Connection Successful"
+msgstr "Connexion réussie"
+
+#: inc/generateanswer.class.php:38
+msgid "Wikit Semantics Application Response"
+msgstr "Réponse de l'application Wikit Semantics"
+
+#: inc/generateanswer.class.php:52 inc/generateanswer.class.php:55
+msgid "Suggest an answer with AI"
+msgstr "Suggérer une réponse avec l'IA"
+
+#: inc/generateanswer.class.php:97 inc/generateanswer.class.php:100
+msgid "Suggest a solution with AI"
+msgstr "Suggérer une solution avec l'IA"
+
+#: inc/profile.class.php:29 inc/profile.class.php:149
+msgid "Wikit Semantics"
+msgstr "Wikit Semantics"
