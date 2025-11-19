@@ -46,15 +46,10 @@ class PluginWikitsemanticsGenerateAnswer extends CommonDBTM
     public function showWikitSemanticsButtonITILFollowup($ticketId)
     {
         $this->showAjaxModal();
+        $suggestAnswerText = htmlspecialchars(__('Suggest an answer with AI', 'wikitsemantics'), ENT_QUOTES, 'UTF-8');
         echo Html::scriptBlock(
             "
-            document.querySelector('.itilfollowup form[name=asset_form] div.row .order-first .row').innerHTML = '<div class=\"form-field row col-12  mb-2\"><label class=\"col-form-label col-2 text-xxl-end\"> </label><div class=\"col-10  field-container\"><a class=\"btn btn-secondary overflow-hidden text-nowrap\" data-bs-toggle=\"modal\" data-bs-target=\"#popupAnswer\" title=\"" . __(
-                'Suggest an answer with AI',
-                'wikitsemantics'
-            ) . "\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" data-bs-original-title=\"" . __(
-                'Suggest an answer with AI',
-                'wikitsemantics'
-            ) . "\" onclick=\"powerActionFollowup()\"><i class=\"fas fa-wand-magic-sparkles\"></i></a></div></div>' + document.querySelector('.itilfollowup form[name=asset_form] div.row .order-first .row').innerHTML;
+            document.querySelector('.itilfollowup form[name=asset_form] div.row .order-first .row').innerHTML = '<div class=\"form-field row col-12  mb-2\"><label class=\"col-form-label col-2 text-xxl-end\"> </label><div class=\"col-10  field-container\"><a class=\"btn btn-secondary overflow-hidden text-nowrap\" data-bs-toggle=\"modal\" data-bs-target=\"#popupAnswer\" title=\"" . $suggestAnswerText . "\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" data-bs-original-title=\"" . $suggestAnswerText . "\" onclick=\"powerActionFollowup()\"><i class=\"fas fa-wand-magic-sparkles\"></i></a></div></div>' + document.querySelector('.itilfollowup form[name=asset_form] div.row .order-first .row').innerHTML;
 
             function closeFollowup(){
                 document.querySelector('#popupAnswer div.modal-body').innerHTML = '<div style=\"display: block; height: 200px;padding: 20px\"><i class=\"fas fa-4x fa-spinner fa-pulse m-5 start-50\" style=\"position: relative;margin: auto !important;\"></i></div>';
@@ -90,16 +85,11 @@ document.querySelector('#popupAnswer div.modal-body').innerHTML = '<div style=\"
     public function showWikitSemanticsButtonITILSolution($ticketId)
     {
         $this->showAjaxModal();
+        $suggestSolutionText = htmlspecialchars(__('Suggest a solution with AI', 'wikitsemantics'), ENT_QUOTES, 'UTF-8');
         echo Html::scriptBlock(
             "
 
-            document.querySelector('.itilsolution form[name=asset_form] div.row .order-first .row .form-field .field-container').innerHTML += '<a class=\"btn btn-secondary overflow-hidden text-nowrap\" data-bs-toggle=\"modal\" data-bs-target=\"#popupAnswer\" title=\"" . __(
-                'Suggest a solution with AI',
-                'wikitsemantics'
-            ) . "\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" data-bs-original-title=\"" . __(
-                'Suggest a solution with AI',
-                'wikitsemantics'
-            ) . "\" onclick=\"powerActionSolution()\"><i class=\"fas fa-wand-magic-sparkles\"></i></a>';
+            document.querySelector('.itilsolution form[name=asset_form] div.row .order-first .row .form-field .field-container').innerHTML += '<a class=\"btn btn-secondary overflow-hidden text-nowrap\" data-bs-toggle=\"modal\" data-bs-target=\"#popupAnswer\" title=\"" . $suggestSolutionText . "\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" data-bs-original-title=\"" . $suggestSolutionText . "\" onclick=\"powerActionSolution()\"><i class=\"fas fa-wand-magic-sparkles\"></i></a>';
 
             function closeSolution(){
                 document.querySelector('#popupAnswer div.modal-body').innerHTML = '<div style=\"display: block; height: 200px;padding: 20px\"><i class=\"fas fa-4x fa-spinner fa-pulse m-5 start-50\" style=\"position: relative;margin: auto !important;\"></i></div>';

@@ -63,6 +63,7 @@ function plugin_version_wikitsemantics()
         'author' => 'Wikit',
         'license' => 'Apache2',
         'homepage' => 'https://github.com/wikit-ai/GLPI-Semantics',
+        'logo' => 'logo-wikit-blue.png',
         'requirements' => [
             'glpi' => [
                 'min' => PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION,
