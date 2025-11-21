@@ -26,7 +26,7 @@ This plugin enables users to find in natural language a answer to tickets, conte
 
 ### Configuration Interface
 
-![alt text](screenshots/config.png)
+![screenshot of config form](screenshots/config.png)
 
 ### Tickets-Answering in Action
 
@@ -34,7 +34,9 @@ This plugin enables users to find in natural language a answer to tickets, conte
 
 ### Integration with GLPI Forms
 
-![alt text](screenshots/form.png)
+![screenshot of a ticket form](screenshots/form.png)
+
+![screenshot of a response](screenshots/response.png)
 
 ## Requirements
 
