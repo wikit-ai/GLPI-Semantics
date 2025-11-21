@@ -58,7 +58,7 @@ This plugin enables users to find in natural language a answer to tickets, conte
 
 ## About Wikit Semantics
 
-Wikit Semantics provides enterprise-grade AI solutions for intelligent information retrieval and knowledge management. Visit [Wikit AI](https://wikit.ai) for more information.
+Wikit Semantics provides enterprise-grade AI solutions for intelligent information retrieval and knowledge management. Visit [Wikit](https://wikit.ai) for more information.
 
 ## Contributing
 
