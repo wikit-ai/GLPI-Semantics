@@ -32,7 +32,7 @@
       <version>
          <num>1.0.0</num>
          <compatibility>~10.0.0</compatibility>
-         <download_url>https://github.com/wikit-ai/GLPI-Semantics/releases/download/v1.0.0/wikitsemantics-1.0.0.tar.gz</download_url>
+         <download_url>https://github.com/wikit-ai/GLPI-Semantics/archive/refs/tags/1.0.0.tar.gz</download_url>
       </version>
    </versions>
    <langs>
