@@ -28,10 +28,6 @@ This plugin enables users to find in natural language a answer to tickets, conte
 
 ![screenshot of config form](screenshots/config.png)
 
-### Tickets-Answering in Action
-
-*Screenshot to be added - Example of asking a question and receiving an answer*
-
 ### Integration with GLPI Forms
 
 ![screenshot of a ticket form](screenshots/form.png)
@@ -48,8 +44,8 @@ This plugin enables users to find in natural language a answer to tickets, conte
   - API Key
 
 ## Quick Setup
-
-1. Install the plugin in your GLPI plugins directory
+0. Download repository and rename folder wikitsemantics
+1. Install the plugin in your GLPI plugins directory move folder wikitsemantics to plugins directory, should be something like that : /var/www/html/glpi/marketplace/
 2. Activate the plugin from the GLPI interface
 3. Navigate to the plugin configuration page
 4. Enter your Wikit Semantics API credentials
