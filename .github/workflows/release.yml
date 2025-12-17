@@ -1,0 +1,76 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create wikitsemantics directory structure
+        run: |
+          # Créer un dossier temporaire pour construire l'archive
+          mkdir -p build/wikitsemantics
+
+          # Copier tous les fichiers nécessaires dans le dossier wikitsemantics
+          cp -r wikitsemantics/* build/wikitsemantics/
+
+          # S'assurer que tous les fichiers sont présents
+          ls -la build/wikitsemantics
+
+      - name: Create release archive
+        run: |
+          cd build
+          # Créer une archive tar.gz du dossier wikitsemantics
+          tar -czf ../wikitsemantics-${{ steps.get_version.outputs.VERSION }}.tar.gz wikitsemantics/
+          # Créer aussi une archive zip
+          zip -r ../wikitsemantics-${{ steps.get_version.outputs.VERSION }}.zip wikitsemantics/
+          cd ..
+
+          # Vérifier que les archives ont été créées
+          ls -lh wikitsemantics-*.tar.gz
+          ls -lh wikitsemantics-*.zip
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+          echo "## Wikit Semantics v${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### Installation" >> $GITHUB_OUTPUT
+          echo "1. Téléchargez l'archive \`wikitsemantics-${{ steps.get_version.outputs.VERSION }}.tar.gz\` ou \`.zip\`" >> $GITHUB_OUTPUT
+          echo "2. Extrayez l'archive dans le dossier \`plugins\` de votre installation GLPI" >> $GITHUB_OUTPUT
+          echo "3. Activez le plugin depuis l'interface GLPI" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### Compatibilité" >> $GITHUB_OUTPUT
+          echo "- GLPI >= 10.0.0" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### Changements" >> $GITHUB_OUTPUT
+          echo "Voir les commits pour les détails des changements." >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Wikit Semantics ${{ steps.get_version.outputs.VERSION }}
+          body: ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+          files: |
+            wikitsemantics-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            wikitsemantics-${{ steps.get_version.outputs.VERSION }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
