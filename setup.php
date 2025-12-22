@@ -8,23 +8,19 @@
 
 use Glpi\Plugin\Hooks;
 
-define('PLUGIN_WIKITSEMANTICS_VERSION', '1.0.0');
+define('PLUGIN_WIKITSEMANTICS_VERSION', '1.1.0');
 // Minimal GLPI version, inclusive
 define("PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION", "10.0.0");
 // Maximum GLPI version, exclusive
-define("PLUGIN_WIKITSEMANTICS_MAX_GLPI_VERSION", "10.0.99");
+define("PLUGIN_WIKITSEMANTICS_MAX_GLPI_VERSION", "11.9.99");
 
 define("PLUGIN_WIKITSEMANTICS_DIR", Plugin::getPhpDir("wikitsemantics"));
 
 define("PLUGIN_WIKITSEMANTICS_WEBDIR", Plugin::getWebDir("wikitsemantics"));
 
-$GLPI_TYPES = [];
-$GLPI_FIELDS = [];
-
 /**
  * Init hooks of the plugin.
  * REQUIRED
- *
  * @return void
  */
 function plugin_init_wikitsemantics()
@@ -52,7 +48,6 @@ function plugin_init_wikitsemantics()
 /**
  * Get the name and the version of the plugin
  * REQUIRED
- *
  * @return array
  */
 function plugin_version_wikitsemantics()
