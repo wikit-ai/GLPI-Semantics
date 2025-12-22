@@ -18,10 +18,11 @@ class PluginWikitsemanticsProfile extends CommonDBTM
     public static $rightname = "profile";
 
     /**
-     * @param CommonGLPI $item
-     * @param int $withtemplate
+     * Get the tab name for an item
      *
-     * @return string|translated
+     * @param CommonGLPI $item         Item instance
+     * @param int        $withtemplate Template flag
+     * @return string Tab name or empty string
      */
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {
@@ -33,13 +34,14 @@ class PluginWikitsemanticsProfile extends CommonDBTM
 
 
     /**
-     * @param CommonGLPI $item
-     * @param int $tabnum
-     * @param int $withtemplate
+     * Display the tab content for an item
      *
-     * @return bool
+     * @param CommonGLPI $item         Item instance
+     * @param int        $tabnum       Tab number
+     * @param int        $withtemplate Template flag
+     * @return bool True if content was displayed
      */
-    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
+    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0): bool
     {
         if ($item->getType() == 'Profile') {
             $ID = $item->getID();
@@ -52,24 +54,27 @@ class PluginWikitsemanticsProfile extends CommonDBTM
     }
 
     /**
-     * @param $ID
+     * Create first access rights for a profile
+     *
+     * @param int $ID Profile ID
+     * @return void
      */
     public static function createFirstAccess($ID)
     {
-        //85
         self::addDefaultProfileInfos(
             $ID,
-            ['plugin_wikitsemantics_configs' => READ],
+            ['plugin_wikitsemantics_configs' => READ + UPDATE],
             true
         );
     }
 
     /**
-     * @param      $profiles_id
-     * @param      $rights
-     * @param bool $drop_existing
+     * Add default profile rights
      *
-     * @internal param $profile
+     * @param int   $profiles_id   Profile ID
+     * @param array $rights        Rights to add (name => value)
+     * @param bool  $drop_existing Whether to drop existing rights before adding
+     * @return void
      */
     public static function addDefaultProfileInfos($profiles_id, $rights, $drop_existing = false)
     {
@@ -92,7 +97,9 @@ class PluginWikitsemanticsProfile extends CommonDBTM
                 $profileRight->add($myright);
 
                 //Add right to the current session
-                $_SESSION['glpiactiveprofile'][$right] = $value;
+                if (isset($_SESSION['glpiactiveprofile'])) {
+                    $_SESSION['glpiactiveprofile'][$right] = $value;
+                }
             }
         }
     }
@@ -103,7 +110,6 @@ class PluginWikitsemanticsProfile extends CommonDBTM
      * @param int $profiles_id
      * @param bool $openform
      * @param bool $closeform
-     *
      * @internal param int $items_id id of the profile
      * @internal param value $target url of target
      */
@@ -137,15 +143,16 @@ class PluginWikitsemanticsProfile extends CommonDBTM
     }
 
     /**
-     * @param bool $all
+     * Get all plugin rights
      *
-     * @return array
+     * @param bool $all Get all rights or only visible ones
+     * @return array Array of rights definitions
      */
     public static function getAllRights($all = false)
     {
         $rights = [
             [
-                'rights' => [READ => __('Read')],
+                'rights' => [READ => __('Read'), UPDATE => __('Update')],
                 'label' => __('Wikit Semantics', 'wikitsemantics'),
                 'field' => 'plugin_wikitsemantics_configs',
             ],
@@ -154,13 +161,11 @@ class PluginWikitsemanticsProfile extends CommonDBTM
     }
 
     /**
-     * Init profiles
+     * Translate an old right format to new format
      *
-     * @param $old_right
-     *
-     * @return int
+     * @param string|int $old_right Old right value
+     * @return int Translated right value
      */
-
     public static function translateARight($old_right)
     {
         switch ($old_right) {
@@ -180,7 +185,9 @@ class PluginWikitsemanticsProfile extends CommonDBTM
     }
 
     /**
-     * Initialize profiles, and migrate it necessary
+     * Initialize profiles and migrate if necessary
+     * Adds plugin rights to profiles and updates current session
+     * @return void
      */
     public static function initProfile()
     {
@@ -198,11 +205,18 @@ class PluginWikitsemanticsProfile extends CommonDBTM
             }
         }
 
+        // Only update session if it exists and has active profile
+        if (!isset($_SESSION['glpiactiveprofile']['id'])) {
+            return;
+        }
+
+        $profileId = (int)$_SESSION['glpiactiveprofile']['id'];
+
         $it = $DB->request([
             'FROM' => 'glpi_profilerights',
             'WHERE' => [
-                'profiles_id' => $_SESSION['glpiactiveprofile']['id'],
-                'name' => ['LIKE', '%plugin_wikitsemantics%'],
+                'profiles_id' => $profileId,
+                'name' => ['LIKE', $DB->escape('%plugin_wikitsemantics%')],
             ],
         ]);
         foreach ($it as $prof) {
@@ -211,6 +225,10 @@ class PluginWikitsemanticsProfile extends CommonDBTM
     }
 
 
+    /**
+     * Remove plugin rights from current session
+     * @return void
+     */
     public static function removeRightsFromSession()
     {
         foreach (self::getAllRights(true) as $right) {

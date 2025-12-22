@@ -11,8 +11,15 @@ include('../../../inc/includes.php');
 Session::checkRight("plugin_wikitsemantics_configs", READ);
 
 if (isset($_POST['ticketId'])) {
+    $ticketId = filter_var($_POST['ticketId'], FILTER_VALIDATE_INT);
+    if ($ticketId === false || $ticketId <= 0) {
+        http_response_code(400);
+        echo json_encode(['error' => __('Invalid ticket ID', 'wikitsemantics')]);
+        exit;
+    }
+
     $generateAnswer = new PluginWikitsemanticsGenerateAnswer();
-    $result = $generateAnswer->prepareToGenerateAnswer($_POST['ticketId']);
+    $result = $generateAnswer->prepareToGenerateAnswer($ticketId);
     $functionclose = $_POST['close'] . "()";
 
     if ($result) {
