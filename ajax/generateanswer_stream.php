@@ -51,6 +51,22 @@ if ($ticketId === false || $ticketId <= 0) {
     exit;
 }
 
+// Verify user has access to this specific ticket (horizontal access control)
+$ticket = new Ticket();
+if (!$ticket->getFromDB($ticketId)) {
+    echo "event: error\n";
+    echo "data: " . json_encode(['error' => 'Ticket not found']) . "\n\n";
+    flush();
+    exit;
+}
+
+if (!$ticket->canViewItem()) {
+    echo "event: error\n";
+    echo "data: " . json_encode(['error' => 'Access denied']) . "\n\n";
+    flush();
+    exit;
+}
+
 // Get ticket content
 $generateAnswer = new PluginWikitsemanticsGenerateAnswer();
 $ticketContent = $generateAnswer->getTicketContent($ticketId);
