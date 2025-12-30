@@ -1,0 +1,20 @@
+{#
+ # Wikit Semantics - AI Answer Generation Modal
+ # Copyright (C) 2026 by the Wikit Development Team.
+ #}
+
+<div class="modal fade" id="popupAnswer" tabindex="-1" aria-labelledby="popupAnswerLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" style="max-width: 1180px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="popupAnswerLabel">{{ __('Wikit Semantics Application Response', 'wikitsemantics') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="min-height: 500px;">
+                <div style="display: block; height: 200px; padding: 20px">
+                    <i class="fas fa-4x fa-spinner fa-pulse m-5 start-50" style="position: relative; margin: auto !important;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

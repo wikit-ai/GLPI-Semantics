@@ -2,11 +2,9 @@
 /**
  * -------------------------------------------------------------------------
  * Wikit Semantics plugin for GLPI
- * Copyright (C) 2025 by the Wikit Development Team.
+ * Copyright (C) 2026 by the Wikit Development Team.
  * -------------------------------------------------------------------------
  */
-
-include('../../../inc/includes.php');
 
 Session::checkRight("plugin_wikitsemantics_configs", READ);
 
