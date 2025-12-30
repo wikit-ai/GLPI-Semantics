@@ -1,35 +1,37 @@
-name: Continuous Integration
+name: "Continuous integration"
 
 on:
   push:
     branches:
-      - '2.*.*'
-      - main
+      - "2.*"
+      - "main"
     tags:
-       - '*'
+       - "*"
   pull_request:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
   generate-ci-matrix:
-    uses: glpi-project/plugin-ci-workflows/.github/workflows/generate_ci_matrix.yml@v1
+    name: "Generate CI matrix"
+    uses: "glpi-project/plugin-ci-workflows/.github/workflows/generate-ci-matrix.yml@v1"
     with:
-      glpi_version: "11.0.x"
+      glpi-version: "11.0.x"
 
   ci:
-    needs: generate-ci-matrix
-    uses: glpi-project/plugin-ci-workflows/.github/workflows/ci.yml@v1
+    name: "GLPI ${{ matrix.glpi-version }} - php:${{ matrix.php-version }} - ${{ matrix.db-image }}"
+    needs: "generate-ci-matrix"
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.generate-ci-matrix.outputs.matrix) }}
+    uses: "glpi-project/plugin-ci-workflows/.github/workflows/continuous-integration.yml@v1"
     with:
-      plugin_key: "wikitsemantics"
-      glpi_version: ${{ matrix.glpi_version }}
-      php_version: ${{ matrix.php_version }}
-      db_image: ${{ matrix.db_image }}
+      plugin-key: "wikitsemantics"
+      glpi-version: "${{ matrix.glpi-version }}"
+      php-version: "${{ matrix.php-version }}"
+      db-image: "${{ matrix.db-image }}"
