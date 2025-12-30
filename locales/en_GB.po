@@ -1,5 +1,5 @@
 # English translations for GLPI - Wikit Semantics package.
-# Copyright (C) 2025 Wikit
+# Copyright (C) 2026 Wikit
 # This file is distributed under the same license as the GLPI - Wikit Semantics package.
 # Mael Allé <mael@wikit.ai>, 2025.
 #

@@ -1,15 +1,39 @@
 {
+    "name": "wikit-ai/wikitsemantics",
+    "description": "AI-powered semantic search and answer generation for GLPI",
+    "type": "glpi-plugin",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/wikit-ai/GLPI-Semantics",
+    "support": {
+        "issues": "https://github.com/wikit-ai/GLPI-Semantics/issues",
+        "source": "https://github.com/wikit-ai/GLPI-Semantics"
+    },
     "require": {
-        "php": ">=8.0"
+        "php": ">=8.2"
     },
     "require-dev": {
-        "glpi-project/tools": "^0.7"
+        "glpi-project/coding-standard": "^0.9",
+        "glpi-project/tools": "^0.8"
     },
     "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "glpi-project/tools": true
+        },
         "optimize-autoloader": true,
         "platform": {
-            "php": "8.0.0"
+            "php": "8.2"
         },
         "sort-packages": true
+    },
+    "scripts": {
+        "lint": [
+            "@lint:php"
+        ],
+        "lint:php": "phpcs --standard=.phpcs.xml.dist",
+        "cs:fix": [
+            "@cs:fix:php"
+        ],
+        "cs:fix:php": "phpcbf --standard=.phpcs.xml.dist"
     }
 }

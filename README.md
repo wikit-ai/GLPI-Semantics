@@ -20,7 +20,9 @@ This plugin enables users to find in natural language a answer to tickets, conte
 - Secure API authentication with organization and application-level controls
 - Easy configuration through GLPI's admin interface
 - Connection testing to verify API setup
-- Support for GLPI 10.0+
+- Support for GLPI 10.0+ and 11.0+
+- Real-time streaming responses (GLPI 11+)
+- Multiple integration points: Followups, Solutions, and Tasks
 
 ## Screenshots
 
@@ -36,7 +38,20 @@ This plugin enables users to find in natural language a answer to tickets, conte
 
 ## Requirements
 
-- GLPI version 10.0.0 or higher
+### Version Compatibility
+
+| Plugin Version | GLPI Version | PHP Version | Branch | Status |
+|---------------|--------------|-------------|--------|--------|
+| 1.x.x | 10.0.0 - 10.9.99 | 8.0+ | `1.x` | Maintenance only |
+| 2.x.x | 11.0.0+ | 8.2+ | `2.x` | Active development |
+
+**Important**:
+- For **GLPI 10.x**, use version 1.x of this plugin
+- For **GLPI 11.x**, use version 2.x of this plugin
+- Versions are not cross-compatible
+
+### Prerequisites
+
 - Active Wikit Semantics account with:
   - API URL
   - Organization ID
@@ -73,4 +88,4 @@ For issues, questions, or contributions, please visit our [GitHub repository](ht
 ---
 
 
-**Copyright**: © 2025 Wikit
+**Copyright**: © 2026 Wikit
