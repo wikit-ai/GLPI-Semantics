@@ -1,19 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Twig CS Fixer configuration for Wikit Semantics plugin
+ * Twig CS configuration for Wikit Semantics plugin
  */
 
-use TwigCsFixer\Config\Config;
-use TwigCsFixer\File\Finder;
-use TwigCsFixer\Ruleset\Ruleset;
-use TwigCsFixer\Standard\TwigCsFixer;
+use FriendsOfTwig\Twigcs;
 
-$finder = new Finder();
-$finder->in(__DIR__ . '/templates');
+$finder = Twigcs\Finder\TemplateFinder::create()
+    ->in(__DIR__ . '/templates')
+    ->depth('>= 0')
+    ->name('*.html.twig')
+    ->ignoreVCSIgnored(true);
 
-$config = new Config();
-$config->setFinder($finder);
-$config->setRuleset(new Ruleset());
-
-return $config;
+return Twigcs\Config\Config::create()
+    ->setFinder($finder)
+    ->setRuleSet(\Glpi\Tools\GlpiTwigRuleset::class);
