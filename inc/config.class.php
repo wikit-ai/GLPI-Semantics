@@ -2,7 +2,7 @@
 /**
  * -------------------------------------------------------------------------
  * Wikit Semantics plugin for GLPI
- * Copyright (C) 2025 by the Wikit Development Team.
+ * Copyright (C) 2026 by the Wikit Development Team.
  * -------------------------------------------------------------------------
  */
 
@@ -198,18 +198,6 @@ class PluginWikitsemanticsConfig extends CommonDBTM
         echo "</td>";
         echo "</tr>";
 
-        /* Streaming mode checkbox */
-        echo "<tr class='tab_bg_1'>";
-        echo "<td>" . __("Enable Streaming Mode", "wikitsemantics") . "</td>";
-        echo "<td>";
-        $is_streaming = isset($this->fields['is_streaming_enabled']) ? $this->fields['is_streaming_enabled'] : 0;
-
-        echo "<input type='hidden' name='is_streaming_enabled' value='0'>";
-        echo "<input type='checkbox' name='is_streaming_enabled' value='1' " . ($is_streaming ? "checked" : "") . ">";
-        echo "<span class='ms-2 text-muted'>" . __('Stream responses token by token', 'wikitsemantics') . "</span>";
-        echo "</td>";
-        echo "</tr>";
-
         if (isset($this->fields['url_api']) && !empty($this->fields['url_api'])) {
             echo "<tr class='tab_bg_1'>";
 
@@ -278,120 +266,6 @@ class PluginWikitsemanticsConfig extends CommonDBTM
         } else {
             return false;
         }
-    }
-
-    /**
-     * Stream AI answer from Wikit Semantics API using SSE
-     * Outputs Server-Sent Events directly to the response stream
-     *
-     * @param array $dataToPost Data containing the query
-     * @return void
-     */
-    public function streamAPIAnswer($dataToPost)
-    {
-        global $CFG_GLPI;
-
-        if (!isset($dataToPost['query'])) {
-            $dataToPost = ['query' => 'Hello ! Je suis un test venant du plugin GLPI !'];
-        }
-
-        $proxy_host  = !empty($CFG_GLPI["proxy_name"]) ? ($CFG_GLPI["proxy_name"] . ":" . $CFG_GLPI["proxy_port"]) : false;
-        $proxy_ident = !empty($CFG_GLPI["proxy_user"]) ? ($CFG_GLPI["proxy_user"] . ":" .
-            (new GLPIKey())->decrypt($CFG_GLPI["proxy_passwd"])) : false;
-
-        // Build URL with streaming parameter
-        $url = '/semantics/apps/' . $this->fields['app_id'] . '/query-executions?is_stream_mode=true';
-
-        if (substr($this->fields['url_api'], -1) == '/') {
-            $url = substr($this->fields['url_api'], 0, -1) . $url;
-        } else {
-            $url = $this->fields['url_api'] . $url;
-        }
-
-        // Decrypt API key before use
-        $api_key = $this->fields['api_key'];
-        if (!empty($api_key) && strpos($api_key, 'encrypted:') === 0) {
-            $api_key = (new GLPIKey())->decrypt(substr($api_key, 10));
-        }
-
-        $header = [
-            'Content-Type: application/json',
-            'Wikit-Semantics-API-Key: ' . $api_key,
-            'X-Wikit-Response-Format: json',
-            'X-Wikit-Organization-Id: ' . $this->fields['organization_id'],
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-
-        // Enable the use of a proxy server
-        if (!empty($CFG_GLPI["proxy_name"])) {
-            curl_setopt($ch, CURLOPT_PROXY, $proxy_host);
-            if ($proxy_ident) {
-                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy_ident);
-            }
-        }
-
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dataToPost));
-
-        // Use write function to process streaming data
-        $buffer = '';
-        curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $data) use (&$buffer) {
-            $buffer .= $data;
-
-            // Process complete chunks ending with STOP
-            while (($pos = strpos($buffer, 'STOP')) !== false) {
-                $chunk = substr($buffer, 0, $pos);
-                $buffer = substr($buffer, $pos + 4); // Remove processed chunk + "STOP"
-
-                // The format from Wikit API is: data: {"queryId": "...", "chunk":"..."}STOP
-                // We need to extract the JSON part
-                $lines = explode("\n", trim($chunk));
-
-                foreach ($lines as $line) {
-                    $line = trim($line);
-
-                    // Look for lines starting with "data: "
-                    if (strpos($line, 'data:') === 0) {
-                        // Remove "data:" prefix and trim spaces
-                        $jsonData = trim(substr($line, 5));
-                        $decoded = json_decode($jsonData, true);
-
-                        if ($decoded && isset($decoded['chunk'])) {
-                            // Send SSE event with the chunk
-                            echo "event: chunk\n";
-                            echo "data: " . json_encode(['chunk' => $decoded['chunk']]) . "\n\n";
-
-                            // Force flush to send data immediately
-                            if (ob_get_level() > 0) {
-                                ob_flush();
-                            }
-                            flush();
-                        }
-                    }
-                }
-            }
-
-            return strlen($data);
-        });
-
-        $result = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        if ($result === false) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            throw new Exception("Streaming API call failed: " . $error);
-        }
-
-        curl_close($ch);
     }
 
     /**

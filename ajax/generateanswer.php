@@ -2,7 +2,7 @@
 /**
  * -------------------------------------------------------------------------
  * Wikit Semantics plugin for GLPI
- * Copyright (C) 2025 by the Wikit Development Team.
+ * Copyright (C) 2026 by the Wikit Development Team.
  * -------------------------------------------------------------------------
  */
 
@@ -29,24 +29,12 @@ if (isset($_POST['ticketId'])) {
         echo "</div>";
         $result = json_encode(['content' => $result]);
         $function = $_POST['answer'] . "($result)";
-        echo Html::submit(
-            __('Add to ticket', 'wikitsemantics'),
-            [
-                'id' => 'btnAddAnswer',
-                'onclick' => "$function",
-                'data-bs-dismiss' => 'modal',
-                'class' => 'btn btn-primary',
-            ]
-        );
-        echo Html::submit(
-            __('Close', 'wikitsemantics'),
-            [
-                'id' => 'btnClose',
-                'class' => 'btn btn-secondary',
-                'onclick' => "$functionclose",
-                'data-bs-dismiss' => 'modal',
-            ]
-        );
+        echo '<button type="button" id="btnAddAnswer" class="btn btn-primary" onclick="' . htmlspecialchars($function, ENT_QUOTES) . '" data-bs-dismiss="modal">';
+        echo __('Add to ticket', 'wikitsemantics');
+        echo '</button>';
+        echo '<button type="button" id="btnClose" class="btn btn-secondary" onclick="' . htmlspecialchars($functionclose, ENT_QUOTES) . '" data-bs-dismiss="modal">';
+        echo __('Close', 'wikitsemantics');
+        echo '</button>';
     } else {
         echo "<div id='divanswer'>";
         echo "<p>" . __(

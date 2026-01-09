@@ -5,7 +5,6 @@ CREATE TABLE `glpi_plugin_wikitsemantics_configs` (
    `app_id` varchar(255) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
    `api_key` varchar(500) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT 'Encrypted with GLPIKey',
    `organization_id` varchar(255) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
-   `is_streaming_enabled` tinyint NOT NULL DEFAULT 0,
    `date_creation` timestamp NULL DEFAULT NULL,
    `date_mod` timestamp NULL DEFAULT NULL,
    PRIMARY KEY  (`id`),

@@ -3,7 +3,7 @@
 /**
  * -------------------------------------------------------------------------
  * Wikit Semantics plugin for GLPI
- * Copyright (C) 2025 by the Wikit Development Team.
+ * Copyright (C) 2026 by the Wikit Development Team.
  * -------------------------------------------------------------------------
  */
 
@@ -62,13 +62,18 @@ function plugin_wikitsemantics_install()
         $DB->runFile(PLUGIN_WIKITSEMANTICS_DIR . "/install/sql/empty-1.0.0.sql");
     }
 
+    // Remove streaming field if it exists (migration)
+    if ($DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'is_streaming_enabled')) {
+        $migration->dropField('glpi_plugin_wikitsemantics_configs', 'is_streaming_enabled');
+    }
+
     // Add fields if they don't exist (for upgrades)
     if (!$DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'date_creation')) {
         $migration->addField(
             'glpi_plugin_wikitsemantics_configs',
             'date_creation',
             'timestamp',
-            ['after' => 'is_streaming_enabled']
+            ['after' => 'organization_id']
         );
         $migration->addKey('glpi_plugin_wikitsemantics_configs', 'date_creation');
     }

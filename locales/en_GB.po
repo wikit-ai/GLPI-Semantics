@@ -65,14 +65,6 @@ msgstr "API key"
 msgid "Enter new API key to change"
 msgstr "Enter new API key to change"
 
-#: inc/config.class.php:187
-msgid "Enable Streaming Mode"
-msgstr "Enable Streaming Mode"
-
-#: inc/config.class.php:194
-msgid "Stream responses token by token"
-msgstr "Stream responses token by token"
-
 #: inc/config.class.php:204
 msgid "Test connection"
 msgstr "Test connection"
