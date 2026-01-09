@@ -1,26 +1,17 @@
-# Release 1.1.0
+Changelog
+All notable changes to the Wikit Semantics plugin will be documented in this file.
 
-## Added
-- GLPI 11.x compatibility
-- GLPI compliance: mandatory prerequisite and config check functions
-- Streaming responses from Wikit API with SSE protocol option
-- "Ask AI" button for TicketTask items
-- More granular rights management (READ + UPDATE)
-- Comprehensive error logging with Toolbox class
+## [1.1.1] - 2026-01-09
 
-## Changed
-- GLPI compliance: Migration class instead of raw SQL
-- Secured hook with complete parameter validation
-- Enhanced error handling without exposing sensitive data
+### Changed
+- Simplified to AJAX-only mode for better stability and reliability
 
-## Fixed
-- Input validation for ticket IDs (filter_var)
-- SQL injection protection with session checks
-- Hook parameter validation (is_object checks)
-- TicketTask "Add to ticket" button CSS selector
+### Fixed
+- "Add to ticket" button functionality across all item types (ITILFollowup, ITILSolution, TicketTask)
 
-## Security
-- Input validation on all AJAX endpoints
-- SQL injection prevention
-- Enhanced hook security
-- API key encryption
+### Removed
+- Streaming mode (SSE) due to CSRF token incompatibility and in favor of stable AJAX implementation
+- `is_streaming_enabled` configuration option and database field
+- `/ajax/generateanswer_stream.php` endpoint
+
+---
