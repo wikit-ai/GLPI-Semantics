@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - '*.*.*'
 
 jobs:
   build-and-release:
@@ -15,51 +15,59 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Create wikitsemantics directory structure
+      - name: Debug repo contents
+        run: ls -la
+
+      - name: Create release archives
         run: |
-          # Créer un dossier temporaire pour construire l'archive
-          mkdir -p build/wikitsemantics
+          VERSION=${{ steps.get_version.outputs.VERSION }}
 
-          # Copier tous les fichiers nécessaires dans le dossier wikitsemantics
-          cp -r wikitsemantics/* build/wikitsemantics/
+          # Create a temporary folder for the archive
+          mkdir release_tmp
 
-          # S'assurer que tous les fichiers sont présents
-          ls -la build/wikitsemantics
+          # Copy all repo files (excluding previous archives and .git) into a folder named "wikitsemantics" inside the temp folder
+          mkdir release_tmp/wikitsemantics
+          rsync -av --progress . release_tmp/wikitsemantics --exclude "wikitsemantics-*.tar.gz" --exclude "wikitsemantics-*.zip" --exclude "wikitsemantics-*.tar.bz2" --exclude ".git"
 
-      - name: Create release archive
-        run: |
-          cd build
-          # Créer une archive tar.gz du dossier wikitsemantics
-          tar -czf ../wikitsemantics-${{ steps.get_version.outputs.VERSION }}.tar.gz wikitsemantics/
-          # Créer aussi une archive zip
-          zip -r ../wikitsemantics-${{ steps.get_version.outputs.VERSION }}.zip wikitsemantics/
+          # Create a tar.gz archive
+          tar -czf wikitsemantics-${VERSION}.tar.gz -C release_tmp wikitsemantics
+
+          # Create a tar.bz2 archive
+          tar -cjf wikitsemantics-${VERSION}.tar.bz2 -C release_tmp wikitsemantics
+
+          # Create a zip archive
+          cd release_tmp
+          zip -r ../wikitsemantics-${VERSION}.zip wikitsemantics
           cd ..
 
-          # Vérifier que les archives ont été créées
+          # Verify that the archives have been created
           ls -lh wikitsemantics-*.tar.gz
+          ls -lh wikitsemantics-*.tar.bz2
           ls -lh wikitsemantics-*.zip
 
-      - name: Generate release notes
+          # Remove the temporary folder
+          rm -rf release_tmp
+
+
+      - name: Generate release notes from CHANGELOG.md
         id: release_notes
         run: |
+          # Read CHANGELOG.md or fallback to default text
+          if [ -f CHANGELOG.md ]; then
+            NOTES=$(cat CHANGELOG.md)
+          else
+            NOTES="No CHANGELOG.md found."
+          fi
+          # Set output safely for multi-line content
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
-          echo "## Wikit Semantics v${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "### Installation" >> $GITHUB_OUTPUT
-          echo "1. Téléchargez l'archive \`wikitsemantics-${{ steps.get_version.outputs.VERSION }}.tar.gz\` ou \`.zip\`" >> $GITHUB_OUTPUT
-          echo "2. Extrayez l'archive dans le dossier \`plugins\` de votre installation GLPI" >> $GITHUB_OUTPUT
-          echo "3. Activez le plugin depuis l'interface GLPI" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "### Compatibilité" >> $GITHUB_OUTPUT
-          echo "- GLPI >= 10.0.0" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "### Changements" >> $GITHUB_OUTPUT
-          echo "Voir les commits pour les détails des changements." >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
@@ -69,6 +77,7 @@ jobs:
           body: ${{ steps.release_notes.outputs.RELEASE_NOTES }}
           files: |
             wikitsemantics-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            wikitsemantics-${{ steps.get_version.outputs.VERSION }}.tar.bz2
             wikitsemantics-${{ steps.get_version.outputs.VERSION }}.zip
           draft: false
           prerelease: false
