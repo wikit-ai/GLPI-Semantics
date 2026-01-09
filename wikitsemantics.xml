@@ -1,76 +1,136 @@
 <root>
-   <name>Wikit Semantics</name>
-   <key>wikitsemantics</key>
-   <state>stable</state>
-   <logo>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/logo-wikit-blue.png</logo>
-   <description>
-      <short>
-         <en>AI-powered semantic search and intelligent question-answering for GLPI</en>
-         <fr>Recherche sémantique et réponses intelligentes basées sur l'IA pour GLPI</fr>
-      </short>
-      <long>
-         <en>**Wikit Semantics** brings AI-powered semantic search capabilities to GLPI. Enable users ask for help in natural language and receive intelligent, context-aware answers based on your organization's knowledge base. Features include:
-- Direct integration with Wikit Semantics API
-- Secure API authentication
-- Easy configuration through GLPI's admin interface
-- Faster support resolution and improved self-service</en>
-         <fr>**Wikit Semantics** apporte des capacités de recherche sémantique basées sur l'IA à GLPI. Permet aux utilisateurs de poser des questions en langage naturel et de recevoir des réponses intelligentes et contextuelles basées sur la base de connaissances de votre organisation. Fonctionnalités :
-- Intégration directe avec l'API Wikit Semantics
-- Authentification API sécurisée
-- Configuration facile via l'interface d'administration GLPI
-- Résolution de support plus rapide et amélioration du libre-service</fr>
-      </long>
-   </description>
-   <homepage>https://github.com/wikit-ai/GLPI-Semantics</homepage>
-   <download>https://github.com/wikit-ai/GLPI-Semantics/releases</download>
-   <issues>https://github.com/wikit-ai/GLPI-Semantics/issues</issues>
-   <readme>https://github.com/wikit-ai/GLPI-Semantics/blob/main/README.md</readme>
-   <authors>
-      <author>Wikit Development Team</author>
-   </authors>
-   <versions>
-      <version>
-         <num>2.0.0</num>
-         <compatibility>~11.0.0</compatibility>
-         <download_url>https://github.com/wikit-ai/GLPI-Semantics/archive/refs/tags/2.0.0.tar.gz</download_url>
-      </version>
-      <version>
-         <num>1.1.0</num>
-         <compatibility>~10.0.0</compatibility>
-         <download_url>https://github.com/wikit-ai/GLPI-Semantics/archive/refs/tags/1.1.0.tar.gz</download_url>
-      </version>
-      <version>
-         <num>1.0.0</num>
-         <compatibility>~10.0.0</compatibility>
-         <download_url>https://github.com/wikit-ai/GLPI-Semantics/archive/refs/tags/1.0.0.tar.gz</download_url>
-      </version>
-   </versions>
-   <langs>
-      <lang>en_GB</lang>
-      <lang>fr_FR</lang>
-   </langs>
-   <license>Apache V2.0</license>
-   <tags>
-      <en>
-         <tag>AI</tag>
-         <tag>Semantic Search</tag>
-         <tag>Knowledge Base</tag>
-         <tag>Natural Language</tag>
-         <tag>Question Answering</tag>
-         <tag>Wikit</tag>
-      </en>
-      <fr>
-         <tag>IA</tag>
-         <tag>Recherche Sémantique</tag>
-         <tag>Base de Connaissances</tag>
-         <tag>Langage Naturel</tag>
-         <tag>Questions-Réponses</tag>
-         <tag>Wikit</tag>
-      </fr>
-   </tags>
-   <screenshots>
-      <screenshot>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/screenshots/config.png</screenshot>
-      <screenshot>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/screenshots/question-answer.png</screenshot>
-      <screenshot>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/screenshots/integration.png</screenshot>
-   </screenshots>
+	<name>Wikit Semantics</name>
+	<key>wikitsemantics</key>
+	<state>stable</state>
+	<logo>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/logo-wikit-blue.png</logo>
+	<description>
+		<short>
+			<en>Boost your IT support with AI: instant responses and accelerated ticket resolution directly in GLPI.</en>
+		   <fr>Boostez votre support IT avec l'IA : réponses instantanées et résolution de tickets accélérée directement dans GLPI.</fr>
+		</short>
+		<long>
+			<en><![CDATA[<p>Wikit Semantics integrates generative artificial intelligence directly into your GLPI interface to boost your technicians' efficiency. With a single click, your personal assistant is activated and generates structured response suggestions based on your organisation's knowledge.</p>
+
+<h3>Key Features:</h3>
+<ul>
+    <li><strong>Contextualised intelligence:</strong> Utilisation of your GLPI knowledge base and external sources (SharePoint, EDM, FAQs, documentation)</li>
+    <li><strong>Non-intrusive assistance:</strong> Technicians retain full control and activate assistance only when they wish to use it.</li>
+    <li><strong>Faster resolution:</strong> Reduced search and writing time</li>
+    <li><strong>Standardisation:</strong> Consistent, professional response quality</li>
+</ul>
+
+<h3>Benefits:</h3>
+<ul>
+    <li>Immediate efficiency for all technicians</li>
+    <li>Faster onboarding of new employees</li>
+    <li>Experts can focus on complex, high-value-added cases</li>
+</ul>
+
+<h3>Prerequisites:</h3>
+<p><strong>Wikit Semantics licence required:</strong> This plugin requires a Wikit Semantics licence subscription to operate. You must be a Wikit customer to use this service.</p>
+
+<p>To obtain a licence or a demonstration:</p>
+<ul>
+    <li><a href="https://www.wikit.ai" target="_blank">https://www.wikit.ai</a></li>
+    <li><a href="mailto:contact@wikit.ai">contact@wikit.ai</a></li>
+</ul>
+
+<h3>Installation:</h3>
+<ol>
+    <li>Simple setup via the GLPI administration interface</li>
+    <li>Secure API authentication with Wikit Semantics</li>
+    <li>Immediate activation of the AI button in your tickets</li>
+</ol>
+
+<p><strong>Take your technicians to a whole new level: that of "augmented" support!</strong></p>]]></en>
+         <fr><![CDATA[<p>Wikit Semantics intègre l'intelligence artificielle générative directement dans votre interface GLPI pour booster l'efficacité de vos techniciens. D'un simple clic votre assistant personnel s'active et génère des suggestions de réponses structurées basées sur les connaissances de votre organisation.</p>
+
+<h3>Fonctionnalités clés :</h3>
+<ul>
+    <li><strong>Intelligence contextualisée :</strong> Exploitation de votre base de connaissances GLPI et sources externes (SharePoint, GED, FAQ, documentations)</li>
+    <li><strong>Assistance non-intrusive :</strong> Le technicien garde le contrôle total et active l'aide uniquement quand il le souhaite.</li>
+    <li><strong>Résolution accélérée :</strong> Réduction du temps de recherche et de rédaction</li>
+    <li><strong>Standardisation :</strong> Qualité de réponse constante et professionnelle</li>
+</ul>
+
+<h3>Bénéfices :</h3>
+<ul>
+    <li>Efficacité immédiate pour tous les techniciens</li>
+    <li>Onboarding accéléré des nouveaux collaborateurs</li>
+    <li>Focus des experts sur les cas complexes à haute valeur ajoutée</li>
+</ul>
+
+<h3>Prérequis :</h3>
+<p><strong>Licence Wikit Semantics requise :</strong> Ce plugin nécessite une souscription à une licence Wikit Semantics pour fonctionner. Vous devez être client Wikit pour bénéficier de ce service.</p>
+
+<p>Pour obtenir une licence ou une démonstration :</p>
+<ul>
+    <li><a href="https://www.wikit.ai" target="_blank">https://www.wikit.ai</a></li>
+    <li><a href="mailto:contact@wikit.ai">contact@wikit.ai</a></li>
+</ul>
+
+<h3>Installation :</h3>
+<ol>
+    <li>Configuration simple via l'interface d'administration GLPI</li>
+    <li>Authentification API sécurisée avec Wikit Semantics</li>
+    <li>Activation immédiate du bouton IA dans vos tickets</li>
+</ol>
+
+<p><strong>Propulsez vos techniciens dans une nouvelle dimension : celle du support « augmenté » !</strong></p>]]></fr>
+		</long>
+	</description>
+	<homepage>https://wikit.ai</homepage>
+	<download>https://github.com/wikit-ai/GLPI-Semantics/releases</download>
+	<issues>https://github.com/wikit-ai/GLPI-Semantics/issues</issues>
+	<readme>https://github.com/wikit-ai/GLPI-Semantics/blob/main/README.md</readme>
+	<authors>
+		<author>Wikit Development Team</author>
+	</authors>
+	<versions>
+		<version>
+			<num>2.0.0</num>
+			<compatibility>~11.0.0</compatibility>
+			<download_url>https://github.com/wikit-ai/GLPI-Semantics/archive/refs/tags/2.0.0.tar.gz</download_url>
+		</version>
+		<version>
+			<num>1.1.0</num>
+			<compatibility>~10.0.0</compatibility>
+			<download_url>https://github.com/wikit-ai/GLPI-Semantics/archive/refs/tags/1.1.0.tar.gz</download_url>
+		</version>
+		<version>
+			<num>1.0.0</num>
+			<compatibility>~10.0.0</compatibility>
+			<download_url>https://github.com/wikit-ai/GLPI-Semantics/archive/refs/tags/1.0.0.tar.gz</download_url>
+		</version>
+	</versions>
+	<langs>
+		<lang>en_GB</lang>
+		<lang>fr_FR</lang>
+	</langs>
+	<license>Apache V2.0</license>
+	<tags>
+		<en>
+			<tag>AI</tag>
+			<tag>Semantic Search</tag>
+			<tag>Knowledge Base</tag>
+			<tag>Natural Language</tag>
+			<tag>Question Answering</tag>
+			<tag>Ticket Resolution</tag>
+			<tag>Wikit</tag>
+		</en>
+		<fr>
+			<tag>IA</tag>
+			<tag>Recherche Sémantique</tag>
+			<tag>Base de Connaissances</tag>
+			<tag>Langage Naturel</tag>
+			<tag>Questions-Réponses</tag>
+			<tag>Résolution de Tickets</tag>
+			<tag>Wikit</tag>
+		</fr>
+	</tags>
+	<screenshots>
+		<screenshot>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/screenshots/config.png</screenshot>
+		<screenshot>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/screenshots/response.png</screenshot>
+		<screenshot>https://raw.githubusercontent.com/wikit-ai/GLPI-Semantics/main/screenshots/form.png</screenshot>
+	</screenshots>
 </root>
