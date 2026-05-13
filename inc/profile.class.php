@@ -6,10 +6,6 @@
  * -------------------------------------------------------------------------
  */
 
-if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
-}
-
 /**
  * Class PluginWikitsemanticsProfile
  */
@@ -45,7 +41,11 @@ class PluginWikitsemanticsProfile extends CommonDBTM
           $ID = $item->getID();
           $prof = new self();
 
-          self::addDefaultProfileInfos($ID, ['plugin_wikitsemantics_configs' => 0]);
+          self::addDefaultProfileInfos($ID, [
+               'plugin_wikitsemantics_configs' => 0,
+               'plugin_wikitsemantics_knowledgebase' => 0,
+               'plugin_wikitsemantics_editorai' => 0,
+           ]);
           $prof->showForm($ID);
       }
        return true;
@@ -60,7 +60,11 @@ class PluginWikitsemanticsProfile extends CommonDBTM
    public static function createFirstAccess($ID) {
        self::addDefaultProfileInfos(
            $ID,
-           ['plugin_wikitsemantics_configs' => READ + UPDATE],
+           [
+               'plugin_wikitsemantics_configs' => READ + UPDATE,
+               'plugin_wikitsemantics_knowledgebase' => READ + UPDATE,
+               'plugin_wikitsemantics_editorai' => READ,
+           ],
            true
        );
    }
@@ -146,8 +150,18 @@ class PluginWikitsemanticsProfile extends CommonDBTM
        $rights = [
            [
                'rights' => [READ => __('Read'), UPDATE => __('Update')],
-               'label' => __('Wikit Semantics', 'wikitsemantics'),
+               'label' => __('Wikit Semantics - Configuration', 'wikitsemantics'),
                'field' => 'plugin_wikitsemantics_configs',
+           ],
+           [
+               'rights' => [READ => __('Read'), UPDATE => __('Update')],
+               'label' => __('Wikit Semantics - Knowledge Base', 'wikitsemantics'),
+               'field' => 'plugin_wikitsemantics_knowledgebase',
+           ],
+           [
+               'rights' => [READ => __('Read')],
+               'label' => __('Wikit Semantics - Editor AI', 'wikitsemantics'),
+               'field' => 'plugin_wikitsemantics_editorai',
            ],
        ];
        return $rights;

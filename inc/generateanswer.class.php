@@ -8,10 +8,6 @@
 
 use Glpi\Application\View\TemplateRenderer;
 
-if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
-}
-
 /**
  * Class PluginWikitsemanticsGenerateAnswer
  */
@@ -28,7 +24,7 @@ class PluginWikitsemanticsGenerateAnswer extends CommonDBTM
        $ticketitems = $ticket->find(['id' => (int)$ticketId]);
 
       if (empty($ticketitems)) {
-          Toolbox::logDebug("Wikit Semantics: Ticket $ticketId not found");
+          PluginWikitsemanticsLogger::warning("Ticket not found", ['ticket_id' => $ticketId]);
           return false;
       }
 
@@ -36,7 +32,7 @@ class PluginWikitsemanticsGenerateAnswer extends CommonDBTM
 
       foreach ($ticketitems as $ticketitem) {
          if (empty($ticketitem['content'])) {
-             Toolbox::logDebug("Wikit Semantics: Ticket $ticketId has no content");
+             PluginWikitsemanticsLogger::warning("Ticket has no content", ['ticket_id' => $ticketId]);
              return false;
          }
           return $config->testConnection(['query' => htmlspecialchars_decode($ticketitem['content'])]);
@@ -55,13 +51,13 @@ class PluginWikitsemanticsGenerateAnswer extends CommonDBTM
        $ticketitems = $ticket->find(['id' => (int)$ticketId]);
 
       if (empty($ticketitems)) {
-          Toolbox::logDebug("Wikit Semantics: Ticket $ticketId not found");
+          PluginWikitsemanticsLogger::warning("Ticket not found", ['ticket_id' => $ticketId]);
           return false;
       }
 
       foreach ($ticketitems as $ticketitem) {
          if (empty($ticketitem['content'])) {
-             Toolbox::logDebug("Wikit Semantics: Ticket $ticketId has no content");
+             PluginWikitsemanticsLogger::warning("Ticket has no content", ['ticket_id' => $ticketId]);
              return false;
          }
           return htmlspecialchars_decode($ticketitem['content']);
@@ -123,11 +119,13 @@ class PluginWikitsemanticsGenerateAnswer extends CommonDBTM
                  data-container-selector="' . htmlspecialchars($containerSelector, ENT_QUOTES, 'UTF-8') . '"
                  data-button-label="' . htmlspecialchars($buttonLabel, ENT_QUOTES, 'UTF-8') . '"
                  data-streaming-enabled="' . $isStreamingEnabled . '"
+                 data-plugin-path="' . htmlspecialchars($pluginWebPath, ENT_QUOTES, 'UTF-8') . '"
                  data-ajax-url="' . htmlspecialchars($pluginWebPath . '/ajax/generateanswer.php', ENT_QUOTES, 'UTF-8') . '"
                  data-ajax-stream-url="' . htmlspecialchars($pluginWebPath . '/ajax/generateanswer_stream.php', ENT_QUOTES, 'UTF-8') . '"
                  data-label-add="' . htmlspecialchars(__('Add to ticket', 'wikitsemantics'), ENT_QUOTES, 'UTF-8') . '"
                  data-label-close="' . htmlspecialchars(__('Close', 'wikitsemantics'), ENT_QUOTES, 'UTF-8') . '"
-                 data-label-error="' . htmlspecialchars(__('GLPI encountered a problem connecting to the Wikit Semantics application. Please try again later.', 'wikitsemantics'), ENT_QUOTES, 'UTF-8') . '">
+                 data-label-error="' . htmlspecialchars(__('GLPI encountered a problem connecting to the Wikit Semantics application. Please try again later.', 'wikitsemantics'), ENT_QUOTES, 'UTF-8') . '"
+                 data-label-no-sources="' . htmlspecialchars(__('No sources available for this answer.', 'wikitsemantics'), ENT_QUOTES, 'UTF-8') . '">
             </div>';
    }
 

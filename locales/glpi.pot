@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI - Wikitsemantics 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-17 22:39+0100\n"
+"POT-Creation-Date: 2026-03-20 14:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,84 +17,217 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ajax/generateanswer.php:26
-msgid "Add to ticket"
+#: ajax/editorai_config.php:40 inc/config.class.php:232
+#: inc/config.class.php:302
+msgid "Editor AI assistant"
 msgstr ""
 
-#: ajax/generateanswer.php:35 ajax/generateanswer.php:51
+#: ajax/editorai_config.php:41
+msgid "Correction"
+msgstr ""
+
+#: ajax/editorai_config.php:42
+msgid "Formatting"
+msgstr ""
+
+#: ajax/editorai_config.php:43
+msgid "Translation"
+msgstr ""
+
+#: ajax/editorai_config.php:44
+msgid "Apply"
+msgstr ""
+
+#: ajax/editorai_config.php:45 ajax/generateanswer.php:78
+#: ajax/generateanswer.php:93 inc/generateanswer.class.php:129
 msgid "Close"
 msgstr ""
 
-#: ajax/generateanswer.php:46
+#: ajax/editorai_config.php:46 ajax/editorai.php:55 ajax/generateanswer.php:88
+#: ajax/generatekb.php:75 inc/generateanswer.class.php:130
+#: inc/knowledgebase.class.php:78
 msgid ""
 "GLPI encountered a problem connecting to the Wikit Semantics application. "
 "Please try again later."
 msgstr ""
 
-#: front/config.form.php:27
+#: ajax/editorai.php:14
+msgid "Missing content or action"
+msgstr ""
+
+#: ajax/editorai.php:22
+msgid "Invalid action"
+msgstr ""
+
+#: ajax/editorai.php:26
+msgid "Editor content is empty"
+msgstr ""
+
+#: ajax/generateanswer.php:15 ajax/generatekb.php:19
+msgid "Invalid ticket ID"
+msgstr ""
+
+#: ajax/generateanswer.php:26
+msgid "Invalid close function"
+msgstr ""
+
+#: ajax/generateanswer.php:30
+msgid "Invalid answer function"
+msgstr ""
+
+#: ajax/generateanswer.php:48 ajax/generatekb.php:25
+msgid "Ticket not found"
+msgstr ""
+
+#: ajax/generateanswer.php:52 ajax/generatekb.php:29
+msgid "Access denied"
+msgstr ""
+
+#: ajax/generateanswer.php:68 inc/generateanswer.class.php:128
+msgid "Add to ticket"
+msgstr ""
+
+#: ajax/generatekb.php:14
+msgid "Missing ticket ID"
+msgstr ""
+
+#: ajax/generatekb.php:42
+msgid "Missing article title or content"
+msgstr ""
+
+#: ajax/generatekb.php:48
+msgid "Failed to create Knowledge Base article"
+msgstr ""
+
+#: ajax/generatekb.php:58
+msgid "Unable to retrieve ticket content"
+msgstr ""
+
+#: front/config.form.php:25
 msgid "Wikitsemantics"
 msgstr ""
 
-#: inc/config.class.php:56
+#: inc/config.class.php:94
 msgid "Configuration API"
 msgstr ""
 
-#: inc/config.class.php:101
-msgid "Wikitsemantics configuration"
+#: inc/config.class.php:147
+msgid "Common settings"
 msgstr ""
 
-#: inc/config.class.php:107
+#: inc/config.class.php:152
 msgid "Wikit Semantics URL base"
 msgstr ""
 
-#: inc/config.class.php:115
+#: inc/config.class.php:160
 msgid "Organization ID"
 msgstr ""
 
-#: inc/config.class.php:123
-msgid "Application ID"
-msgstr ""
-
-#: inc/config.class.php:131
+#: inc/config.class.php:167
 msgid "API key"
 msgstr ""
 
-#: inc/config.class.php:180
+#: inc/config.class.php:176
 msgid "Enter new API key to change"
 msgstr ""
 
-#: inc/config.class.php:187
+#: inc/config.class.php:182
 msgid "Enable Streaming Mode"
 msgstr ""
 
-#: inc/config.class.php:194
+#: inc/config.class.php:188
 msgid "Stream responses token by token"
 msgstr ""
 
-#: inc/config.class.php:204
+#: inc/config.class.php:195 inc/config.class.php:292
+msgid "Ticket answer suggestion"
+msgstr ""
+
+#: inc/config.class.php:200
+msgid "Application ID (Answer)"
+msgstr ""
+
+#: inc/config.class.php:208 inc/config.class.php:297
+msgid "Knowledge base generation"
+msgstr ""
+
+#: inc/config.class.php:213
+msgid "Enable Knowledge Base generation"
+msgstr ""
+
+#: inc/config.class.php:224
+msgid "Application ID (Knowledge Base)"
+msgstr ""
+
+#: inc/config.class.php:237
+msgid "Enable Editor AI assistant"
+msgstr ""
+
+#: inc/config.class.php:248
+msgid "Application ID (Editor AI)"
+msgstr ""
+
+#: inc/config.class.php:261
 msgid "Test connection"
 msgstr ""
 
-#: inc/config.class.php:171
-msgid "Connection Failed"
+#: inc/config.class.php:319
+#, php-format
+msgid "%s: no Application ID configured"
 msgstr ""
 
-#: inc/config.class.php:176
-msgid "Connection Successful"
+#: inc/config.class.php:332
+#, php-format
+msgid "%s: connection failed"
 msgstr ""
 
-#: inc/generateanswer.class.php:38
-msgid "Wikit Semantics Application Response"
+#: inc/config.class.php:338
+#, php-format
+msgid "%s: connection successful"
 msgstr ""
 
-#: inc/generateanswer.class.php:52 inc/generateanswer.class.php:55
+#: inc/config.class.php:346
+msgid ""
+"No application to test. Enable at least one feature and configure its "
+"Application ID."
+msgstr ""
+
+#: inc/generateanswer.class.php:145
 msgid "Suggest an answer with AI"
 msgstr ""
 
-#: inc/generateanswer.class.php:97 inc/generateanswer.class.php:100
+#: inc/generateanswer.class.php:160 inc/generateanswer.class.php:175
 msgid "Suggest a solution with AI"
 msgstr ""
 
-#: inc/profile.class.php:29 inc/profile.class.php:149
+#: inc/knowledgebase.class.php:45
+msgid "Wikit Semantics KB"
+msgstr ""
+
+#: inc/knowledgebase.class.php:74
+msgid "Generate a Knowledge Base article from this ticket"
+msgstr ""
+
+#: inc/knowledgebase.class.php:75
+msgid "Create Knowledge Base article"
+msgstr ""
+
+#: inc/knowledgebase.class.php:76
+msgid "Discard"
+msgstr ""
+
+#: inc/knowledgebase.class.php:77
+msgid "Regenerate"
+msgstr ""
+
+#: inc/profile.class.php:29
 msgid "Wikit Semantics"
+msgstr ""
+
+#: inc/profile.class.php:155
+msgid "Wikit Semantics - Configuration"
+msgstr ""
+
+#: inc/profile.class.php:160
+msgid "Wikit Semantics - Knowledge Base"
 msgstr ""

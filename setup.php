@@ -8,7 +8,7 @@
 
 use Glpi\Plugin\Hooks;
 
-define('PLUGIN_WIKITSEMANTICS_VERSION', '2.0.0');
+define('PLUGIN_WIKITSEMANTICS_VERSION', '2.1.0');
 // Minimal GLPI version, inclusive
 define("PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION", "11.0.0");
 // Maximum GLPI version, exclusive
@@ -33,6 +33,10 @@ function plugin_init_wikitsemantics() {
           Plugin::registerClass(
               'PluginWikitsemanticsProfile',
               ['addtabon' => 'Profile']
+          );
+          Plugin::registerClass(
+              'PluginWikitsemanticsKnowledgebase',
+              ['addtabon' => ['Ticket']]
           );
 
          if (Session::haveRight("config", UPDATE)) {

@@ -97,6 +97,133 @@ msgstr "Suggest an answer with AI"
 msgid "Suggest a solution with AI"
 msgstr "Suggest a solution with AI"
 
-#: inc/profile.class.php:29 inc/profile.class.php:149
+#: inc/profile.class.php
 msgid "Wikit Semantics"
 msgstr "Wikit Semantics"
+
+#: inc/config.class.php - Section headers
+msgid "Common settings"
+msgstr "Common settings"
+
+msgid "Ticket answer suggestion"
+msgstr "Ticket answer suggestion"
+
+msgid "Knowledge base generation"
+msgstr "Knowledge base generation"
+
+msgid "Editor AI assistant"
+msgstr "Editor AI assistant"
+
+#: inc/config.class.php - New fields
+msgid "Application ID (Answer)"
+msgstr "Application ID (Answer)"
+
+msgid "Application ID (Knowledge Base)"
+msgstr "Application ID (Knowledge Base)"
+
+msgid "Application ID (Editor AI)"
+msgstr "Application ID (Editor AI)"
+
+msgid "Enable Knowledge Base generation"
+msgstr "Enable Knowledge Base generation"
+
+msgid "Enable Editor AI assistant"
+msgstr "Enable Editor AI assistant"
+
+#: inc/profile.class.php - Rights
+msgid "Wikit Semantics - Configuration"
+msgstr "Wikit Semantics - Configuration"
+
+msgid "Wikit Semantics - Knowledge Base"
+msgstr "Wikit Semantics - Knowledge Base"
+
+msgid "Wikit Semantics - Editor AI"
+msgstr "Wikit Semantics - Editor AI"
+
+#: inc/knowledgebase.class.php - KB tab
+msgid "Wikit Semantics KB"
+msgstr "Wikit Semantics KB"
+
+msgid "Generate a Knowledge Base article from this ticket"
+msgstr "Generate a Knowledge Base article from this ticket"
+
+msgid "Generating Knowledge Base article..."
+msgstr "Generating Knowledge Base article..."
+
+msgid "Create Knowledge Base article"
+msgstr "Create Knowledge Base article"
+
+msgid "Discard"
+msgstr "Discard"
+
+msgid "Regenerate"
+msgstr "Regenerate"
+
+#: ajax/generatekb.php
+msgid "Missing ticket ID"
+msgstr "Missing ticket ID"
+
+msgid "Invalid ticket ID"
+msgstr "Invalid ticket ID"
+
+msgid "Ticket not found"
+msgstr "Ticket not found"
+
+msgid "Access denied"
+msgstr "Access denied"
+
+msgid "Missing article title or content"
+msgstr "Missing article title or content"
+
+msgid "Failed to create Knowledge Base article"
+msgstr "Failed to create Knowledge Base article"
+
+msgid "Unable to retrieve ticket content"
+msgstr "Unable to retrieve ticket content"
+
+#: inc/generateanswer.class.php - Editor AI
+msgid "Correction"
+msgstr "Correction"
+
+msgid "Formatting"
+msgstr "Formatting"
+
+msgid "Translation"
+msgstr "Translation"
+
+msgid "Apply"
+msgstr "Apply"
+
+#: ajax/editorai.php
+msgid "Missing content or action"
+msgstr "Missing content or action"
+
+msgid "Invalid action"
+msgstr "Invalid action"
+
+msgid "Editor content is empty"
+msgstr "Editor content is empty"
+
+#: inc/config.class.php - Test connection
+msgid "%s: connection failed"
+msgstr "%s: connection failed"
+
+msgid "%s: connection successful"
+msgstr "%s: connection successful"
+
+msgid "%s: no Application ID configured"
+msgstr "%s: no Application ID configured"
+
+msgid "No application to test. Enable at least one feature and configure its Application ID."
+msgstr "No application to test. Enable at least one feature and configure its Application ID."
+
+#: inc/config.class.php - Source citation
+msgid "Enable source citation"
+msgstr "Enable source citation"
+
+msgid "Sources"
+msgstr "Sources"
+
+#: public/js/wikitsemantics.js - Sources
+msgid "No sources available for this answer."
+msgstr "No sources available for this answer."

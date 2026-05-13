@@ -59,13 +59,18 @@ function plugin_wikitsemantics_install() {
        $DB->runFile(PLUGIN_WIKITSEMANTICS_DIR . "/install/sql/empty-1.0.0.sql");
    }
 
+    // Upgrade from 2.0.0: rename app_id to app_id_answer and add new fields
+   if ($DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'app_id')) {
+       $DB->runFile(PLUGIN_WIKITSEMANTICS_DIR . "/install/sql/update-2.1.0.sql");
+   }
+
     // Add fields if they don't exist (for upgrades)
    if (!$DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'date_creation')) {
        $migration->addField(
            'glpi_plugin_wikitsemantics_configs',
            'date_creation',
            'timestamp',
-           ['after' => 'is_streaming_enabled']
+           ['after' => 'app_id_editor']
        );
        $migration->addKey('glpi_plugin_wikitsemantics_configs', 'date_creation');
    }
@@ -79,6 +84,53 @@ function plugin_wikitsemantics_install() {
        );
        $migration->addKey('glpi_plugin_wikitsemantics_configs', 'date_mod');
    }
+
+    // Fallback: add new fields individually if they don't exist
+   if (!$DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'is_kb_enabled')) {
+       $migration->addField(
+           'glpi_plugin_wikitsemantics_configs',
+           'is_kb_enabled',
+           'bool',
+           ['after' => 'is_streaming_enabled', 'value' => 0]
+       );
+   }
+
+   if (!$DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'app_id_kb')) {
+       $migration->addField(
+           'glpi_plugin_wikitsemantics_configs',
+           'app_id_kb',
+           'string',
+           ['after' => 'is_kb_enabled']
+       );
+   }
+
+   if (!$DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'is_editor_ai_enabled')) {
+       $migration->addField(
+           'glpi_plugin_wikitsemantics_configs',
+           'is_editor_ai_enabled',
+           'bool',
+           ['after' => 'app_id_kb', 'value' => 0]
+       );
+   }
+
+   if (!$DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'app_id_editor')) {
+       $migration->addField(
+           'glpi_plugin_wikitsemantics_configs',
+           'app_id_editor',
+           'string',
+           ['after' => 'is_editor_ai_enabled']
+       );
+   }
+
+   if (!$DB->fieldExists('glpi_plugin_wikitsemantics_configs', 'is_sources_enabled_answer')) {
+       $migration->addField(
+           'glpi_plugin_wikitsemantics_configs',
+           'is_sources_enabled_answer',
+           'bool',
+           ['after' => 'app_id_answer', 'value' => 0]
+       );
+   }
+
 
     $migration->executeMigration();
 
