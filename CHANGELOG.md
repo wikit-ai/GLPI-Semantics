@@ -3,6 +3,29 @@
 All notable changes to the Wikit Semantics plugin will be documented in this file.
 
 
+## [2.1.0] - 2026-05-13
+
+### Added
+- Editor AI assistant for rich text editors with correction, formatting and translation actions
+- Knowledge Base article generation from ticket content
+- Dedicated Knowledge Base tab on tickets
+- Streaming endpoints for ticket answers, Knowledge Base generation and Editor AI
+- Quoted sources retrieval and display for generated answers
+- Separate Application IDs for ticket answers, Knowledge Base generation and Editor AI
+- Feature toggles for streaming mode, Knowledge Base generation and Editor AI
+- Additional profile rights for Knowledge Base and Editor AI features
+- Upgrade SQL script for 2.1.0 configuration fields
+
+### Changed
+- Configuration page reorganized into common settings, ticket answers, Knowledge Base and Editor AI sections
+- AI API payloads now clean GLPI rich text content before sending queries
+- Ticket answer generation now returns query IDs for source lookup
+- JavaScript initialization improved for dynamically loaded GLPI forms and TinyMCE editors
+- Translations updated for new configuration labels and Editor AI actions
+
+
+---
+
 ## [2.0.0] - 2025-12-30
 
 ### Breaking Changes

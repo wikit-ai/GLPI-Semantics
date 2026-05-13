@@ -53,36 +53,9 @@ if (isset($_POST['ticketId'])) {
     }
 
     $generateAnswer = new PluginWikitsemanticsGenerateAnswer();
-    $result = $generateAnswer->prepareToGenerateAnswer($ticketId);
+    $ticketContent = $generateAnswer->getTicketContent($ticketId);
 
-    if ($result) {
-        $result = Glpi\RichText\RichText::getSafeHtml(nl2br($result));
-        echo "<div id='divanswer'>";
-        echo $result;
-        echo "</div>";
-
-        $resultData = json_encode(['content' => $result]);
-        $encodedResult = base64_encode($resultData);
-
-        echo Html::submit(
-            __('Add to ticket', 'wikitsemantics'),
-            [
-                'id' => 'btnAddAnswer',
-                'data-answer-content' => $encodedResult,
-                'data-item-type' => $itemType,
-                'data-bs-dismiss' => 'modal',
-                'class' => 'btn btn-primary btn-wikitsemantics-add',
-            ]
-        );
-        echo Html::submit(
-            __('Close', 'wikitsemantics'),
-            [
-                'id' => 'btnClose',
-                'class' => 'btn btn-secondary',
-                'data-bs-dismiss' => 'modal',
-            ]
-        );
-    } else {
+    if (!$ticketContent) {
         echo "<div id='divanswer'>";
         echo "<p>" . __(
             'GLPI encountered a problem connecting to the Wikit Semantics application. Please try again later.',
@@ -97,5 +70,58 @@ if (isset($_POST['ticketId'])) {
                 'data-bs-dismiss' => 'modal',
             ]
         );
+    } else {
+        $config = PluginWikitsemanticsConfig::getConfig();
+        $apiResult = $config->getAPIAnswer(['query' => $ticketContent]);
+
+       if ($apiResult) {
+           $answer = Glpi\RichText\RichText::getSafeHtml(nl2br($apiResult['answer']));
+           $queryId = $apiResult['queryId'] ?? '';
+
+           echo "<div id='divanswer'>";
+           echo $answer;
+           echo "</div>";
+
+          if (!empty($queryId)) {
+              echo "<input type='hidden' id='wikitsemantics-query-id' value='" . htmlspecialchars($queryId, ENT_QUOTES, 'UTF-8') . "'>";
+          }
+
+           $resultData = json_encode(['content' => $answer]);
+           $encodedResult = base64_encode($resultData);
+
+           echo Html::submit(
+               __('Add to ticket', 'wikitsemantics'),
+               [
+                   'id' => 'btnAddAnswer',
+                   'data-answer-content' => $encodedResult,
+                   'data-item-type' => $itemType,
+                   'data-bs-dismiss' => 'modal',
+                   'class' => 'btn btn-primary btn-wikitsemantics-add',
+               ]
+           );
+           echo Html::submit(
+               __('Close', 'wikitsemantics'),
+               [
+                   'id' => 'btnClose',
+                   'class' => 'btn btn-secondary',
+                   'data-bs-dismiss' => 'modal',
+               ]
+           );
+       } else {
+           echo "<div id='divanswer'>";
+           echo "<p>" . __(
+               'GLPI encountered a problem connecting to the Wikit Semantics application. Please try again later.',
+               'wikitsemantics'
+           ) . "</p>";
+           echo "</div>";
+           echo Html::submit(
+               __('Close', 'wikitsemantics'),
+               [
+                   'id' => 'btnClose',
+                   'class' => 'btn btn-secondary',
+                   'data-bs-dismiss' => 'modal',
+               ]
+           );
+       }
     }
 }

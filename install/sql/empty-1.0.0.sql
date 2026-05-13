@@ -1,11 +1,16 @@
 DROP TABLE IF EXISTS `glpi_plugin_wikitsemantics_configs`;
 CREATE TABLE `glpi_plugin_wikitsemantics_configs` (
    `id` int unsigned NOT NULL auto_increment,
-   `url_api` varchar(500) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
-   `app_id` varchar(255) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+   `url_api` varchar(500) COLLATE utf8mb4_unicode_ci NULL DEFAULT 'https://apis.wikit.ai',
+   `app_id_answer` varchar(255) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+   `is_sources_enabled_answer` tinyint NOT NULL DEFAULT 0,
    `api_key` varchar(500) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT 'Encrypted with GLPIKey',
    `organization_id` varchar(255) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
    `is_streaming_enabled` tinyint NOT NULL DEFAULT 0,
+   `is_kb_enabled` tinyint NOT NULL DEFAULT 0,
+   `app_id_kb` varchar(255) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+   `is_editor_ai_enabled` tinyint NOT NULL DEFAULT 0,
+   `app_id_editor` varchar(255) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
    `date_creation` timestamp NULL DEFAULT NULL,
    `date_mod` timestamp NULL DEFAULT NULL,
    PRIMARY KEY  (`id`),

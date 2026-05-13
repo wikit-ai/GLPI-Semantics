@@ -1,0 +1,55 @@
+{#
+ # Wikit Semantics - Knowledge Base Generation Tab
+ # Copyright (C) 2026 by the Wikit Development Team.
+ #}
+
+<div class="wikitsemantics-kb-container"
+     data-ticket-id="{{ ticket_id }}"
+     data-streaming-enabled="{{ streaming_enabled }}"
+     data-ajax-url="{{ ajax_url }}"
+     data-ajax-stream-url="{{ ajax_stream_url }}"
+     data-plugin-path="{{ plugin_path|default('../plugins/wikitsemantics') }}"
+     data-can-create-kb="{{ can_create_kb ? '1' : '0' }}"
+     data-label-generate="{{ label_generate }}"
+     data-label-create="{{ label_create }}"
+     data-label-discard="{{ label_discard }}"
+     data-label-regenerate="{{ label_regenerate }}"
+     data-label-error="{{ label_error }}">
+
+    <div class="wikitsemantics-kb-actions mb-3">
+        <button type="button" class="btn btn-primary wikitsemantics-kb-generate-btn">
+            <i class="fas fa-wand-magic-sparkles me-1"></i>
+            {{ label_generate }}
+        </button>
+    </div>
+
+    <div class="wikitsemantics-kb-loading" style="display: none;">
+        <div class="text-center p-5">
+            <i class="fas fa-4x fa-spinner fa-pulse mb-3"></i>
+            <p class="text-muted">{{ __('Generating Knowledge Base article...', 'wikitsemantics') }}</p>
+        </div>
+    </div>
+
+    <div class="wikitsemantics-kb-result" style="display: none;">
+        <div class="card">
+            <div class="card-body wikitsemantics-kb-content" style="min-height: 300px;">
+            </div>
+            <div class="card-footer text-end">
+                {% if can_create_kb %}
+                <button type="button" class="btn btn-success wikitsemantics-kb-create-btn me-2">
+                    <i class="fas fa-plus me-1"></i>
+                    {{ label_create }}
+                </button>
+                {% endif %}
+                <button type="button" class="btn btn-secondary wikitsemantics-kb-regenerate-btn me-2">
+                    <i class="fas fa-rotate me-1"></i>
+                    {{ label_regenerate }}
+                </button>
+                <button type="button" class="btn btn-outline-secondary wikitsemantics-kb-discard-btn">
+                    <i class="fas fa-xmark me-1"></i>
+                    {{ label_discard }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

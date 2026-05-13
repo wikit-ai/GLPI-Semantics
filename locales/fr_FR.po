@@ -97,6 +97,133 @@ msgstr "Suggérer une réponse avec l'IA"
 msgid "Suggest a solution with AI"
 msgstr "Suggérer une solution avec l'IA"
 
-#: inc/profile.class.php:29 inc/profile.class.php:149
+#: inc/profile.class.php
 msgid "Wikit Semantics"
 msgstr "Wikit Semantics"
+
+#: inc/config.class.php - Section headers
+msgid "Common settings"
+msgstr "Paramètres communs"
+
+msgid "Ticket answer suggestion"
+msgstr "Suggestion de réponse aux tickets"
+
+msgid "Knowledge base generation"
+msgstr "Génération de base de connaissances"
+
+msgid "Editor AI assistant"
+msgstr "Assistant IA éditeur"
+
+#: inc/config.class.php - New fields
+msgid "Application ID (Answer)"
+msgstr "ID de l'application (Réponse)"
+
+msgid "Application ID (Knowledge Base)"
+msgstr "ID de l'application (Base de connaissances)"
+
+msgid "Application ID (Editor AI)"
+msgstr "ID de l'application (IA éditeur)"
+
+msgid "Enable Knowledge Base generation"
+msgstr "Activer la génération de base de connaissances"
+
+msgid "Enable Editor AI assistant"
+msgstr "Activer l'assistant IA dans l'éditeur"
+
+#: inc/profile.class.php - Rights
+msgid "Wikit Semantics - Configuration"
+msgstr "Wikit Semantics - Configuration"
+
+msgid "Wikit Semantics - Knowledge Base"
+msgstr "Wikit Semantics - Base de connaissances"
+
+msgid "Wikit Semantics - Editor AI"
+msgstr "Wikit Semantics - Assistant IA éditeur"
+
+#: inc/knowledgebase.class.php - KB tab
+msgid "Wikit Semantics KB"
+msgstr "Wikit Semantics KB"
+
+msgid "Generate a Knowledge Base article from this ticket"
+msgstr "Générer un article de base de connaissances à partir de ce ticket"
+
+msgid "Generating Knowledge Base article..."
+msgstr "Génération de l'article de base de connaissances en cours..."
+
+msgid "Create Knowledge Base article"
+msgstr "Créer l'article de base de connaissances"
+
+msgid "Discard"
+msgstr "Abandonner"
+
+msgid "Regenerate"
+msgstr "Régénérer"
+
+#: ajax/generatekb.php
+msgid "Missing ticket ID"
+msgstr "ID du ticket manquant"
+
+msgid "Invalid ticket ID"
+msgstr "ID du ticket invalide"
+
+msgid "Ticket not found"
+msgstr "Ticket non trouvé"
+
+msgid "Access denied"
+msgstr "Accès refusé"
+
+msgid "Missing article title or content"
+msgstr "Titre ou contenu de l'article manquant"
+
+msgid "Failed to create Knowledge Base article"
+msgstr "Échec de la création de l'article de base de connaissances"
+
+msgid "Unable to retrieve ticket content"
+msgstr "Impossible de récupérer le contenu du ticket"
+
+#: inc/generateanswer.class.php - Editor AI
+msgid "Correction"
+msgstr "Correction"
+
+msgid "Formatting"
+msgstr "Mise en forme"
+
+msgid "Translation"
+msgstr "Traduction"
+
+msgid "Apply"
+msgstr "Appliquer"
+
+#: ajax/editorai.php
+msgid "Missing content or action"
+msgstr "Contenu ou action manquant"
+
+msgid "Invalid action"
+msgstr "Action invalide"
+
+msgid "Editor content is empty"
+msgstr "Le contenu de l'éditeur est vide"
+
+#: inc/config.class.php - Test connection
+msgid "%s: connection failed"
+msgstr "%s : échec de la connexion"
+
+msgid "%s: connection successful"
+msgstr "%s : connexion réussie"
+
+msgid "%s: no Application ID configured"
+msgstr "%s : aucun ID d'application configuré"
+
+msgid "No application to test. Enable at least one feature and configure its Application ID."
+msgstr "Aucune application à tester. Activez au moins une fonctionnalité et configurez son ID d'application."
+
+#: inc/config.class.php - Source citation
+msgid "Enable source citation"
+msgstr "Activer la citation des sources"
+
+msgid "Sources"
+msgstr "Sources"
+
+#: public/js/wikitsemantics.js - Sources
+msgid "No sources available for this answer."
+msgstr "Aucune source disponible pour cette réponse."
