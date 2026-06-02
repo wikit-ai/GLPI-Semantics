@@ -3,6 +3,14 @@
 All notable changes to the Wikit Semantics plugin will be documented in this file.
 
 
+## [2.1.1] - 2026-06-01
+
+### Changed
+- Plugin is no longer active for unauthenticated users
+- Wikit Semantics profile permissions can now be configured for simplified interface profiles
+
+
+
 ## [2.1.0] - 2026-05-13
 
 ### Added

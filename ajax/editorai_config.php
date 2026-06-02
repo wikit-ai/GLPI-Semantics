@@ -28,7 +28,9 @@ if (empty($config->fields['is_editor_ai_enabled']) || empty($config->fields['app
     return;
 }
 
-$pluginWebPath = '../plugins/wikitsemantics';
+global $CFG_GLPI;
+
+$pluginWebPath = $CFG_GLPI['root_doc'] . '/plugins/wikitsemantics';
 $isStreamingEnabled = isset($config->fields['is_streaming_enabled']) ? (int)$config->fields['is_streaming_enabled'] : 0;
 
 echo json_encode([
