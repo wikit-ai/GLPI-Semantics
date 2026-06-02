@@ -8,7 +8,7 @@
 
 use Glpi\Plugin\Hooks;
 
-define('PLUGIN_WIKITSEMANTICS_VERSION', '2.1.0');
+define('PLUGIN_WIKITSEMANTICS_VERSION', '2.1.1');
 // Minimal GLPI version, inclusive
 define("PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION", "11.0.0");
 // Maximum GLPI version, exclusive
@@ -26,9 +26,9 @@ function plugin_init_wikitsemantics() {
 
    if (Plugin::isPluginActive('wikitsemantics')) {
 
-       $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['wikitsemantics'] = ['public/js/wikitsemantics.js'];
-
       if (Session::getLoginUserID()) {
+          $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['wikitsemantics'] = ['public/js/wikitsemantics.js'];
+
           Plugin::registerClass('PluginWikitsemanticsConfig');
           Plugin::registerClass(
               'PluginWikitsemanticsProfile',
@@ -39,11 +39,20 @@ function plugin_init_wikitsemantics() {
               ['addtabon' => ['Ticket']]
           );
 
+         if (isset($_SESSION['glpiactiveprofile']['id'])
+             && (!isset($_SESSION['glpiactiveprofile']['plugin_wikitsemantics_configs'])
+                 || !isset($_SESSION['glpiactiveprofile']['plugin_wikitsemantics_knowledgebase'])
+                 || !isset($_SESSION['glpiactiveprofile']['plugin_wikitsemantics_editorai']))
+         ) {
+             PluginWikitsemanticsProfile::initProfile();
+         }
+
          if (Session::haveRight("config", UPDATE)) {
             $PLUGIN_HOOKS['config_page']['wikitsemantics'] = 'front/config.form.php';
          }
+
+          $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['wikitsemantics'] = 'plugin_wikitsemantics_post_item_form';
       }
-       $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['wikitsemantics'] = 'plugin_wikitsemantics_post_item_form';
    }
 }
 

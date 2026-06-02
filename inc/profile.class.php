@@ -21,7 +21,7 @@ class PluginWikitsemanticsProfile extends CommonDBTM
      * @return string Tab name or empty string
      */
    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
-      if ($item->getType() == 'Profile' && $item->getField('interface') != 'helpdesk') {
+      if ($item->getType() == 'Profile') {
           return __('Wikit Semantics', 'wikitsemantics');
       }
        return '';
