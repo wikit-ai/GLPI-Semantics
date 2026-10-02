@@ -3,6 +3,17 @@
  * Copyright (C) 2026 by the Wikit Development Team.
  */
 
+// Everything is scoped in an IIFE so top-level names (observer, kbObserver, helpers...)
+// never collide with globals declared by GLPI core or other plugins.
+(function () {
+
+// Guard against the script being included twice on the same page
+if (window.wikitSemanticsScriptLoaded) {
+    return;
+}
+window.wikitSemanticsScriptLoaded = true;
+
+
 /**
  * Convert markdown-like text to HTML
  * @param {string} text - Text to convert
@@ -1527,3 +1538,5 @@ if (document.readyState === 'loading') {
 } else {
     loadAndInitEditorAI();
 }
+
+})();

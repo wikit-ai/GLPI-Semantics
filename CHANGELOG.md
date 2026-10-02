@@ -3,6 +3,13 @@
 All notable changes to the Wikit Semantics plugin will be documented in this file.
 
 
+## [2.1.2] - 2026-10-02
+
+### Fixed
+- JavaScript no longer fails to load ("Identifier 'observer' has already been declared") when another plugin or custom script declares a global with the same name; the plugin script is now scoped and protected against double inclusion
+
+
+
 ## [2.1.1] - 2026-06-01
 
 ### Changed
