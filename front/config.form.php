@@ -11,6 +11,11 @@ global $DB;
 $config = new PluginWikitsemanticsConfig();
 Session::checkRightsOr(PluginWikitsemanticsConfig::$rightname, [READ, UPDATE]);
 
+// READ is the right used by the answer suggestion feature: writing the configuration requires UPDATE
+if (isset($_POST["add"]) || isset($_POST["update"]) || isset($_POST['TestConnection'])) {
+    Session::checkRight(PluginWikitsemanticsConfig::$rightname, UPDATE);
+}
+
 if (isset($_POST["add"])) {
     $config->add($_POST);
     Html::back();

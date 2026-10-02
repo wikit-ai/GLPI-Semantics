@@ -14,33 +14,6 @@ use Glpi\Application\View\TemplateRenderer;
 class PluginWikitsemanticsGenerateAnswer extends CommonDBTM
 {
     /**
-     * Prepare and generate AI answer for a ticket
-     *
-     * @param int $ticketId The ticket ID to process
-     * @return string|bool The generated answer or false on error
-     */
-   public function prepareToGenerateAnswer($ticketId) {
-       $ticket = new Ticket();
-       $ticketitems = $ticket->find(['id' => (int)$ticketId]);
-
-      if (empty($ticketitems)) {
-          PluginWikitsemanticsLogger::warning("Ticket not found", ['ticket_id' => $ticketId]);
-          return false;
-      }
-
-       $config = new PluginWikitsemanticsConfig();
-
-      foreach ($ticketitems as $ticketitem) {
-         if (empty($ticketitem['content'])) {
-             PluginWikitsemanticsLogger::warning("Ticket has no content", ['ticket_id' => $ticketId]);
-             return false;
-         }
-          return $config->testConnection(['query' => htmlspecialchars_decode($ticketitem['content'])]);
-      }
-       return false;
-   }
-
-    /**
      * Get ticket content by ID
      *
      * @param int $ticketId Ticket ID

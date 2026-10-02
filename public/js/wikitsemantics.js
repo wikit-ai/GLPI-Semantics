@@ -28,6 +28,78 @@ function wikitSemanticsStripCitations(text) {
     return text.replace(/\s*\[\d+\]/g, '');
 }
 
+/**
+ * Check that a URL uses a safe scheme (http/https)
+ * @param {string} url - URL to check
+ * @returns {boolean} True if the URL can be used as a link target
+ */
+function wikitSemanticsIsSafeUrl(url) {
+    try {
+        const parsed = new URL(url, window.location.href);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch (e) {
+        return false;
+    }
+}
+
+const WIKIT_SEMANTICS_ALLOWED_TAGS = new Set([
+    'A', 'B', 'BLOCKQUOTE', 'BR', 'CODE', 'DIV', 'EM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'I',
+    'LI', 'OL', 'P', 'PRE', 'SPAN', 'STRONG', 'TABLE', 'TBODY', 'TD', 'TH', 'THEAD', 'TR', 'U', 'UL'
+]);
+const WIKIT_SEMANTICS_DROPPED_TAGS = new Set([
+    'SCRIPT', 'STYLE', 'IFRAME', 'FRAME', 'OBJECT', 'EMBED', 'TEMPLATE', 'NOSCRIPT', 'SVG', 'MATH', 'TEXTAREA', 'SELECT'
+]);
+
+/**
+ * Sanitize HTML coming from the AI API (allow-list of formatting tags, no attributes except safe hrefs)
+ * @param {string} html - Untrusted HTML
+ * @returns {string} Sanitized HTML
+ */
+function wikitSemanticsSanitizeHtml(html) {
+    // DOMParser builds an inert document: no script runs and no resource loads while parsing
+    const doc = new DOMParser().parseFromString('<!DOCTYPE html><body>' + html + '</body>', 'text/html');
+
+    const clean = (node) => {
+        Array.from(node.childNodes).forEach(child => {
+            if (child.nodeType === Node.TEXT_NODE) {
+                return;
+            }
+            if (child.nodeType !== Node.ELEMENT_NODE) {
+                child.remove();
+                return;
+            }
+
+            const tag = child.tagName.toUpperCase();
+            if (WIKIT_SEMANTICS_DROPPED_TAGS.has(tag)) {
+                child.remove();
+                return;
+            }
+
+            clean(child);
+
+            if (!WIKIT_SEMANTICS_ALLOWED_TAGS.has(tag)) {
+                // Unknown tag: keep its (already cleaned) content only
+                child.replaceWith(...child.childNodes);
+                return;
+            }
+
+            Array.from(child.attributes).forEach(attr => {
+                const isSafeHref = tag === 'A' && attr.name === 'href' && wikitSemanticsIsSafeUrl(attr.value);
+                if (!isSafeHref) {
+                    child.removeAttribute(attr.name);
+                }
+            });
+            if (tag === 'A') {
+                child.setAttribute('target', '_blank');
+                child.setAttribute('rel', 'noopener noreferrer');
+            }
+        });
+    };
+
+    clean(doc.body);
+    return doc.body.innerHTML;
+}
+
 function wikitSemanticsTextToHtml(text) {
     let content = text.replace(/\\n/g, '\n');
     content = wikitSemanticsStripCitations(content);
@@ -37,7 +109,8 @@ function wikitSemanticsTextToHtml(text) {
     content = content.replace(/\*(.+?)\*/g, '<em>$1</em>');
     content = content.replace(/_(.+?)_/g, '<em>$1</em>');
     content = content.replace(/`(.+?)`/g, '<code>$1</code>');
-    return content;
+    // API output is untrusted (prompt injection): never inject it as raw HTML
+    return wikitSemanticsSanitizeHtml(content);
 }
 
 /**
@@ -120,7 +193,7 @@ function wikitSemanticsFetchAndDisplaySources(queryId, appIdField, containerElem
             const doc = source.document || {};
             const chunk = source.chunk || {};
             const docName = doc.name || doc.title || source.name || 'Document';
-            const docUrl = doc.url || null;
+            const docUrl = doc.url && wikitSemanticsIsSafeUrl(doc.url) ? doc.url : null;
             const dataSourceName = source.data_source?.name || null;
 
             if (docUrl) {
