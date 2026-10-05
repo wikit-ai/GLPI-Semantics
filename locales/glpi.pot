@@ -231,3 +231,6 @@ msgstr ""
 #: inc/profile.class.php:160
 msgid "Wikit Semantics - Knowledge Base"
 msgstr ""
+
+msgid "The API URL must be a valid HTTPS URL."
+msgstr ""

@@ -3,6 +3,19 @@
 All notable changes to the Wikit Semantics plugin will be documented in this file.
 
 
+## [2.1.3] - 2026-10-02
+
+### Security
+- Strengthened access control on the plugin configuration
+- API URL must now be a valid HTTPS URL
+- AI-generated content is sanitized before being displayed
+- Knowledge Base generation now only uses followups and tasks the current user is allowed to see
+
+### Removed
+- Unused internal code
+
+
+
 ## [2.1.2] - 2026-10-02
 
 ### Fixed

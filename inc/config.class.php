@@ -51,6 +51,21 @@ class PluginWikitsemanticsConfig extends CommonDBTM
      * @return array
      */
    public function prepareInputForUpdate($input) {
+       // Only accept a well-formed HTTPS URL for the API
+      if (isset($input['url_api'])) {
+          $input['url_api'] = trim($input['url_api']);
+          $scheme = parse_url($input['url_api'], PHP_URL_SCHEME);
+          $host = parse_url($input['url_api'], PHP_URL_HOST);
+         if (!is_string($scheme) || strtolower($scheme) !== 'https' || empty($host)) {
+             Session::addMessageAfterRedirect(
+                 __('The API URL must be a valid HTTPS URL.', 'wikitsemantics'),
+                 false,
+                 ERROR
+             );
+             return false;
+         }
+      }
+
        // Encrypt API key if provided and not already encrypted
       if (isset($input['api_key']) && !empty($input['api_key'])) {
           // If user didn't change the masked value, keep the existing encrypted key
@@ -453,6 +468,7 @@ class PluginWikitsemanticsConfig extends CommonDBTM
        curl_setopt($ch, CURLOPT_HEADER, 0);
        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+       curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
        curl_setopt($ch, CURLOPT_POST, 1);
        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
@@ -565,6 +581,7 @@ class PluginWikitsemanticsConfig extends CommonDBTM
        curl_setopt($ch, CURLOPT_HEADER, 0);
        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+       curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);

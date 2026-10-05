@@ -227,3 +227,6 @@ msgstr "Sources"
 #: public/js/wikitsemantics.js - Sources
 msgid "No sources available for this answer."
 msgstr "Aucune source disponible pour cette réponse."
+
+msgid "The API URL must be a valid HTTPS URL."
+msgstr "L'URL de l'API doit être une URL HTTPS valide."
