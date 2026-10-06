@@ -188,30 +188,29 @@ function plugin_wikitsemantics_post_item_form($params) {
        return;
    }
 
+   if (!in_array($item->getType(), ['ITILFollowup', 'ITILSolution', 'TicketTask'], true)) {
+       return;
+   }
+
     $generateAnswer = new PluginWikitsemanticsGenerateAnswer();
-    $ticketId = null;
+    $options = $params['options'] ?? [];
+    $ticketId = 0;
 
-    // Determine ticket ID based on item type
-   switch ($item->getType()) {
-      case 'ITILFollowup':
-      case 'ITILSolution':
-         if (!isset($params['options']['id'])) {
-              return;
-         }
-          $ticketId = (int)$params['options']['id'];
-           break;
+    // Parent ticket: GLPI >= 11.0.9 lazy-loads the answer forms (ajax/timeline.php) and only passes 'item'
+   if (isset($options['item']) && $options['item'] instanceof Ticket) {
+       $ticketId = (int)$options['item']->getID();
+   } else if (isset($options['parent']) && $options['parent'] instanceof Ticket) {
+       $ticketId = (int)$options['parent']->getID();
+   } else if ($item->getType() !== 'TicketTask'
+       && isset($options['id'])
+       && (!isset($options['itemtype']) || $options['itemtype'] === 'Ticket')
+       && in_array($item->fields['itemtype'] ?? '', ['', 'Ticket'], true)) {
+       // GLPI < 11.0.9: forms rendered inline with the ticket form options
+       $ticketId = (int)$options['id'];
+   }
 
-      case 'TicketTask':
-         if (!isset($params['options']['parent'])
-              || !is_object($params['options']['parent'])
-              || !isset($params['options']['parent']->fields['id'])) {
-             return;
-         }
-          $ticketId = (int)$params['options']['parent']->fields['id'];
-           break;
-
-      default:
-           return;
+   if ($ticketId <= 0) {
+       return;
    }
 
     // Call appropriate method based on item type
