@@ -3,6 +3,13 @@
 All notable changes to the Wikit Semantics plugin will be documented in this file.
 
 
+## [2.1.4] - 2026-10-07
+
+### Fixed
+- AI suggestion button missing on followup, task and solution forms with GLPI 11.0.9 and later (answer forms are now lazy-loaded by GLPI)
+
+
+
 ## [2.1.3] - 2026-10-02
 
 ### Security
