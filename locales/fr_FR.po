@@ -230,3 +230,62 @@ msgstr "Aucune source disponible pour cette réponse."
 
 msgid "The API URL must be a valid HTTPS URL."
 msgstr "L'URL de l'API doit être une URL HTTPS valide."
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "Article linked to the ticket category \"%s\""
+msgstr "Article lié à la catégorie du ticket « %s »"
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "Parent of the articles already linked to tickets of the category \"%s\""
+msgstr "Parent des articles déjà liés à des tickets de la catégorie « %s »"
+
+#: inc/knowledgebase.class.php
+msgid "No better match found: root of the knowledge base"
+msgstr "Aucune meilleure correspondance : racine de la base de connaissances"
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "%s (and sub-entities)"
+msgstr "%s (et sous-entités)"
+
+#: inc/knowledgebase.class.php
+msgid "Entities"
+msgstr "Entités"
+
+#: inc/knowledgebase.class.php
+msgid "Profiles"
+msgstr "Profils"
+
+#: inc/knowledgebase.class.php
+msgid "Groups"
+msgstr "Groupes"
+
+#: inc/knowledgebase.class.php
+msgid "Users"
+msgstr "Utilisateurs"
+
+#: inc/knowledgebase.class.php
+msgid "No visibility is inherited from this parent: the article will only be visible to you and to knowledge base administrators until visibility targets are added."
+msgstr "Aucune visibilité n'est héritée de ce parent : l'article ne sera visible que par vous et par les administrateurs de la base de connaissances tant que des cibles de visibilité n'auront pas été ajoutées."
+
+#: inc/knowledgebase.class.php
+msgid "Readers inherited from the parent articles:"
+msgstr "Lecteurs hérités des articles parents :"
+
+#: ajax/generatekb.php
+msgid "Invalid parent article"
+msgstr "Article parent invalide"
+
+#: templates/knowledgebase_tab.html.twig
+msgid "Parent article"
+msgstr "Article parent"
+
+#: templates/knowledgebase_tab.html.twig
+msgid "Suggestion:"
+msgstr "Suggestion :"
+
+#: setup.php
+msgid "Calls to the Wikit Semantics API"
+msgstr "Appels à l'API Wikit Semantics"

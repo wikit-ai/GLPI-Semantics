@@ -1,0 +1,499 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars_decode expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: ajax/editorai.php
+
+		-
+			message: '#^Parameter \#1 \$string of function nl2br expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/editorai.php
+
+		-
+			message: '#^Parameter \#1 \$string of function trim expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/editorai.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: ajax/editorai_config.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars_decode expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: ajax/editorai_stream.php
+
+		-
+			message: '#^Parameter \#1 \$string of function trim expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/editorai_stream.php
+
+		-
+			message: '#^Parameter \#1 \$string of function nl2br expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/generateanswer.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 2
+			path: ajax/generatekb.php
+
+		-
+			message: '#^Parameter \#1 \$name of static method GlpiPlugin\\Wikitsemantics\\Knowledgebase\:\:createKnowbaseItem\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/generatekb.php
+
+		-
+			message: '#^Parameter \#1 \$string of function nl2br expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/generatekb.php
+
+		-
+			message: '#^Parameter \#2 \$answer of static method GlpiPlugin\\Wikitsemantics\\Knowledgebase\:\:createKnowbaseItem\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/generatekb.php
+
+		-
+			message: '#^Parameter \#1 \$queryId of method GlpiPlugin\\Wikitsemantics\\Config\:\:getQuotedSources\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/getsources.php
+
+		-
+			message: '#^Parameter \#2 \$subject of function Safe\\preg_match expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ajax/getsources.php
+
+		-
+			message: '#^Parameter \#1 \$input of method CommonDBTM\:\:add\(\) expects array\<string, mixed\>, array\<mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: front/config.form.php
+
+		-
+			message: '#^Parameter \#1 \$input of method CommonDBTM\:\:update\(\) expects array\<string, mixed\>, array\<mixed\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: front/config.form.php
+
+		-
+			message: '#^Parameter \#2 \$url of static method Html\:\:header\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: front/config.form.php
+
+		-
+			message: '#^Cannot access offset ''field'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: hook.php
+
+		-
+			message: '#^Cannot access offset ''id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: hook.php
+
+		-
+			message: '#^Cannot access offset ''item'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: hook.php
+
+		-
+			message: '#^Cannot access offset ''parent'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: hook.php
+
+		-
+			message: '#^Function plugin_wikitsemantics_post_item_form\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: hook.php
+
+		-
+			message: '#^Parameter \#1 \$ID of static method GlpiPlugin\\Wikitsemantics\\Profile\:\:createFirstAccess\(\) expects int, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: hook.php
+
+		-
+			message: '#^Cannot access offset ''id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: setup.php
+
+		-
+			message: '#^Cannot access offset ''wikitsemantics'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: setup.php
+
+		-
+			message: '#^Cannot access offset string on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: setup.php
+
+		-
+			message: '#^Function plugin_version_wikitsemantics\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: setup.php
+
+		-
+			message: '#^Binary operation "\." between ''/semantics/apps/'' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 3
+			path: src/Config.php
+
+		-
+			message: '#^Binary operation "\." between mixed and ''/plugins…'' results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Cannot access offset ''answer'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Cannot access offset ''chunk'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Cannot access offset ''queryId'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: src/Config.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 3
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:APICall\(\) has parameter \$dataToPost with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:APICall\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:cleanDataToPostQuery\(\) has parameter \$dataToPost with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:cleanDataToPostQuery\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:defineTabs\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:defineTabs\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:getAPIAnswer\(\) has parameter \$dataToPost with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:getAPIAnswer\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:getQuotedSources\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:prepareInputForAdd\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:prepareInputForAdd\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:prepareInputForUpdate\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:prepareInputForUpdate\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:showForm\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:streamAPIAnswer\(\) has parameter \$dataToPost with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Config\:\:testConnection\(\) has parameter \$dataToPost with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$CFG_GLPI has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Parameter \#1 \$haystack of function str_starts_with expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 3
+			path: src/Config.php
+
+		-
+			message: '#^Parameter \#1 \$string of function rtrim expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Parameter \#1 \$string of function strip_tags expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Config.php
+
+		-
+			message: '#^Parameter \#1 \$string of function substr expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Parameter \#1 \$string of function trim expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Config.php
+
+		-
+			message: '#^Parameter \#1 \$string of method GLPIKey\:\:encrypt\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Config.php
+
+		-
+			message: '#^Parameter \#3 \$options of method CommonGLPI\:\:addStandardTab\(\) expects array\{withtemplate\?\: int\}, array given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Config.php
+
+		-
+			message: '#^Cannot access offset ''content'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/GenerateAnswer.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: src/GenerateAnswer.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars_decode expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/GenerateAnswer.php
+
+		-
+			message: '#^Binary operation "\." between ''Ticket Title\: '' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Cannot access offset ''content'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Cannot access offset ''id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Cannot access offset ''is_recursive'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Cannot access offset ''parent_id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 5
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Parameter \#1 \$ID of method CommonDBTM\:\:getFromDB\(\) expects int\|string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars_decode expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 4
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Parameter \#2 \.\.\.\$values of function sprintf expects bool\|float\|int\|string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Knowledgebase.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Logger\:\:debug\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Logger.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Logger\:\:error\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Logger.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Logger\:\:info\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Logger.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Logger\:\:log\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Logger.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Logger\:\:warning\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Logger.php
+
+		-
+			message: '#^Cannot access offset ''field'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 4
+			path: src/Profile.php
+
+		-
+			message: '#^Cannot access offset ''id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Profile.php
+
+		-
+			message: '#^Cannot access offset ''name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Profile.php
+
+		-
+			message: '#^Cannot access offset ''rights'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Profile.php
+
+		-
+			message: '#^Cannot access offset \(int\|string\) on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Profile.php
+
+		-
+			message: '#^Cannot access offset mixed on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: src/Profile.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: src/Profile.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Profile\:\:addDefaultProfileInfos\(\) has parameter \$rights with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Profile.php
+
+		-
+			message: '#^Method GlpiPlugin\\Wikitsemantics\\Profile\:\:getAllRights\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Profile.php

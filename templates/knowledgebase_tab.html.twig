@@ -1,14 +1,38 @@
 {#
- # Wikit Semantics - Knowledge Base Generation Tab
- # Copyright (C) 2026 by the Wikit Development Team.
+ # -------------------------------------------------------------------------
+ # Wikit Semantics plugin for GLPI
+ # -------------------------------------------------------------------------
+ #
+ # LICENSE
+ #
+ # This file is part of Wikit Semantics.
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+ #
+ #     http://www.apache.org/licenses/LICENSE-2.0
+ #
+ # Unless required by applicable law or agreed to in writing, software
+ # distributed under the License is distributed on an "AS IS" BASIS,
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ # -------------------------------------------------------------------------
+ # @copyright Copyright (C) 2026 by Wikit.
+ # @license   Apache-2.0 https://www.apache.org/licenses/LICENSE-2.0
+ # @link      https://github.com/wikit-ai/GLPI-Semantics
+ # -------------------------------------------------------------------------
  #}
+
+{% import 'components/form/fields_macros.html.twig' as fields %}
 
 <div class="wikitsemantics-kb-container"
      data-ticket-id="{{ ticket_id }}"
      data-streaming-enabled="{{ streaming_enabled }}"
      data-ajax-url="{{ ajax_url }}"
      data-ajax-stream-url="{{ ajax_stream_url }}"
-     data-plugin-path="{{ plugin_path|default('../plugins/wikitsemantics') }}"
+     data-plugin-path="{{ plugin_path }}"
      data-can-create-kb="{{ can_create_kb ? '1' : '0' }}"
      data-label-generate="{{ label_generate }}"
      data-label-create="{{ label_create }}"
@@ -34,6 +58,27 @@
         <div class="card">
             <div class="card-body wikitsemantics-kb-content" style="min-height: 300px;">
             </div>
+            {% if can_create_kb and suggested_parent %}
+            <div class="card-body border-top wikitsemantics-kb-placement">
+                {{ fields.dropdownArrayField(
+                    'kb_parent_id',
+                    suggested_parent.id,
+                    parent_candidates,
+                    __('Parent article', 'wikitsemantics'),
+                    {
+                        'is_horizontal': false,
+                        'full_width': true,
+                        'add_field_class': 'wikitsemantics-kb-parent',
+                    }
+                ) }}
+                <div class="form-text mb-2 wikitsemantics-kb-parent-reason">
+                    <i class="ti ti-bulb me-1"></i>{{ __('Suggestion:', 'wikitsemantics') }} {{ suggested_parent.reason }}
+                </div>
+                <div class="wikitsemantics-kb-parent-visibility">
+                    {{ parent_visibility|raw }}
+                </div>
+            </div>
+            {% endif %}
             <div class="card-footer text-end">
                 {% if can_create_kb %}
                 <button type="button" class="btn btn-success wikitsemantics-kb-create-btn me-2">

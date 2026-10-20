@@ -230,3 +230,62 @@ msgstr "No sources available for this answer."
 
 msgid "The API URL must be a valid HTTPS URL."
 msgstr "The API URL must be a valid HTTPS URL."
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "Article linked to the ticket category \"%s\""
+msgstr "Article linked to the ticket category \"%s\""
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "Parent of the articles already linked to tickets of the category \"%s\""
+msgstr "Parent of the articles already linked to tickets of the category \"%s\""
+
+#: inc/knowledgebase.class.php
+msgid "No better match found: root of the knowledge base"
+msgstr "No better match found: root of the knowledge base"
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "%s (and sub-entities)"
+msgstr "%s (and sub-entities)"
+
+#: inc/knowledgebase.class.php
+msgid "Entities"
+msgstr "Entities"
+
+#: inc/knowledgebase.class.php
+msgid "Profiles"
+msgstr "Profiles"
+
+#: inc/knowledgebase.class.php
+msgid "Groups"
+msgstr "Groups"
+
+#: inc/knowledgebase.class.php
+msgid "Users"
+msgstr "Users"
+
+#: inc/knowledgebase.class.php
+msgid "No visibility is inherited from this parent: the article will only be visible to you and to knowledge base administrators until visibility targets are added."
+msgstr "No visibility is inherited from this parent: the article will only be visible to you and to knowledge base administrators until visibility targets are added."
+
+#: inc/knowledgebase.class.php
+msgid "Readers inherited from the parent articles:"
+msgstr "Readers inherited from the parent articles:"
+
+#: ajax/generatekb.php
+msgid "Invalid parent article"
+msgstr "Invalid parent article"
+
+#: templates/knowledgebase_tab.html.twig
+msgid "Parent article"
+msgstr "Parent article"
+
+#: templates/knowledgebase_tab.html.twig
+msgid "Suggestion:"
+msgstr "Suggestion:"
+
+#: setup.php
+msgid "Calls to the Wikit Semantics API"
+msgstr "Calls to the Wikit Semantics API"

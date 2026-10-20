@@ -3,6 +3,38 @@
 All notable changes to the Wikit Semantics plugin will be documented in this file.
 
 
+## [3.0.0] - 2026-10-20
+
+Versions 3.x are dedicated to GLPI 12 (2.x: GLPI 11, 1.x: GLPI 10).
+
+### Added
+- GLPI 12.0 compatibility
+- Knowledge Base generation: choice of the parent article in the GLPI 12 knowledge base tree, with a suggested parent (article linked to the ticket category, or parent of the articles already linked to tickets of the same category)
+- Knowledge Base generation: preview of who will be able to read the article, as visibility is inherited from the parent articles in GLPI 12
+- Generated Knowledge Base articles are linked to the ticket they come from
+- Editor AI assistant in the GLPI 12 knowledge base editor: a magic wand button in the menu shown on a text selection corrects, formats or translates the selected text
+
+### Changed
+- Calls to Wikit Semantics use the GLPI HTTP client: GLPI proxy settings and proxy exclusions are applied (the plugin can be selected in the proxy exclusions), and private network addresses must be allowed in `GLPI_SERVERSIDE_URL_ALLOWED_PRIVATE_NETWORKS_CONTEXTS` (see README)
+- Classes moved from `inc/` to `src/`, in the `GlpiPlugin\Wikitsemantics` namespace; existing history is migrated to the new itemtypes
+- Configuration form and AI answer views rendered with Twig templates
+- Database tables created and upgraded with GLPI migrations instead of SQL files
+- Plugin URLs: no more `/public` prefix (deprecated in GLPI 12) and absolute paths based on the GLPI root URL
+- Maximum GLPI version set to 12.0.x, consistent with the plugins directory compatibility
+- Development tooling aligned with the Teclib plugin template: php-cs-fixer, rector, phpstan, twigcs, eslint, licence headers; development files are no longer shipped in the release archives
+- Unit tests (PHPUnit, GLPI test framework): configuration, Wikit Semantics API calls and streaming (mocked HTTP client), Knowledge Base placement and creation, profile rights
+
+### Fixed
+- Wikit Semantics API errors (e.g. invalid API key) are now reported in streaming mode instead of displaying an empty answer, Knowledge Base article or Editor AI result
+- Warnings logged by GLPI about closed output buffers and unexpected output when streaming AI responses
+
+### Removed
+- GLPI 11 support: use the 2.x versions with GLPI 11
+- CSRF tokens in AJAX requests, no longer used by GLPI 12
+- Manual prerequisites checks, replaced by the requirements declared to GLPI
+
+
+
 ## [2.1.4] - 2026-10-07
 
 ### Fixed

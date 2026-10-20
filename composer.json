@@ -9,31 +9,30 @@
         "source": "https://github.com/wikit-ai/GLPI-Semantics"
     },
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.3"
     },
     "require-dev": {
-        "glpi-project/coding-standard": "^0.9",
         "glpi-project/tools": "^0.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "GlpiPlugin\\Wikitsemantics\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "GlpiPlugin\\Wikitsemantics\\Tests\\": "tests/"
+        }
     },
     "config": {
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true,
             "glpi-project/tools": true
         },
         "optimize-autoloader": true,
         "platform": {
-            "php": "8.2"
+            "php": "8.3.99"
         },
-        "sort-packages": true
-    },
-    "scripts": {
-        "lint": [
-            "@lint:php"
-        ],
-        "lint:php": "phpcs --standard=.phpcs.xml.dist",
-        "cs:fix": [
-            "@cs:fix:php"
-        ],
-        "cs:fix:php": "phpcbf --standard=.phpcs.xml.dist"
+        "sort-packages": true,
+        "autoloader-suffix": "PluginWikitsemantics"
     }
 }
