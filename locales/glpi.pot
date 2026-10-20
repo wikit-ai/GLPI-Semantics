@@ -234,3 +234,62 @@ msgstr ""
 
 msgid "The API URL must be a valid HTTPS URL."
 msgstr ""
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "Article linked to the ticket category \"%s\""
+msgstr ""
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "Parent of the articles already linked to tickets of the category \"%s\""
+msgstr ""
+
+#: inc/knowledgebase.class.php
+msgid "No better match found: root of the knowledge base"
+msgstr ""
+
+#: inc/knowledgebase.class.php
+#, php-format
+msgid "%s (and sub-entities)"
+msgstr ""
+
+#: inc/knowledgebase.class.php
+msgid "Entities"
+msgstr ""
+
+#: inc/knowledgebase.class.php
+msgid "Profiles"
+msgstr ""
+
+#: inc/knowledgebase.class.php
+msgid "Groups"
+msgstr ""
+
+#: inc/knowledgebase.class.php
+msgid "Users"
+msgstr ""
+
+#: inc/knowledgebase.class.php
+msgid "No visibility is inherited from this parent: the article will only be visible to you and to knowledge base administrators until visibility targets are added."
+msgstr ""
+
+#: inc/knowledgebase.class.php
+msgid "Readers inherited from the parent articles:"
+msgstr ""
+
+#: ajax/generatekb.php
+msgid "Invalid parent article"
+msgstr ""
+
+#: templates/knowledgebase_tab.html.twig
+msgid "Parent article"
+msgstr ""
+
+#: templates/knowledgebase_tab.html.twig
+msgid "Suggestion:"
+msgstr ""
+
+#: setup.php
+msgid "Calls to the Wikit Semantics API"
+msgstr ""

@@ -1,19 +1,50 @@
 <?php
+
 /**
  * -------------------------------------------------------------------------
  * Wikit Semantics plugin for GLPI
- * Copyright (C) 2026 by the Wikit Development Team.
+ * -------------------------------------------------------------------------
+ *
+ * LICENSE
+ *
+ * This file is part of Wikit Semantics.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -------------------------------------------------------------------------
+ * @copyright Copyright (C) 2026 by Wikit.
+ * @license   Apache-2.0 https://www.apache.org/licenses/LICENSE-2.0
+ * @link      https://github.com/wikit-ai/GLPI-Semantics
  * -------------------------------------------------------------------------
  */
 
+use Glpi\Config\ProxyExclusion;
+use Glpi\Config\ProxyExclusions;
 use Glpi\Plugin\Hooks;
+use GlpiPlugin\Wikitsemantics\Config;
+use GlpiPlugin\Wikitsemantics\EditorAI;
+use GlpiPlugin\Wikitsemantics\Knowledgebase;
+use GlpiPlugin\Wikitsemantics\Profile;
 
-define('PLUGIN_WIKITSEMANTICS_VERSION', '2.1.4');
+/** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
+define('PLUGIN_WIKITSEMANTICS_VERSION', '3.0.0');
 // Minimal GLPI version, inclusive
-define("PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION", "11.0.0");
+/** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
+define("PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION", "12.0.0");
 // Maximum GLPI version, exclusive
-define("PLUGIN_WIKITSEMANTICS_MAX_GLPI_VERSION", "11.9.99");
+/** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
+define("PLUGIN_WIKITSEMANTICS_MAX_GLPI_VERSION", "12.0.99");
 
+/** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
 define("PLUGIN_WIKITSEMANTICS_DIR", Plugin::getPhpDir("wikitsemantics"));
 
 /**
@@ -21,39 +52,51 @@ define("PLUGIN_WIKITSEMANTICS_DIR", Plugin::getPhpDir("wikitsemantics"));
  * REQUIRED
  * @return void
  */
-function plugin_init_wikitsemantics() {
-    global $PLUGIN_HOOKS;
+function plugin_init_wikitsemantics()
+{
+    global $PLUGIN_HOOKS, $CFG_GLPI;
 
-   if (Plugin::isPluginActive('wikitsemantics')) {
+    if (Plugin::isPluginActive('wikitsemantics')) {
 
-      if (Session::getLoginUserID()) {
-          $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['wikitsemantics'] = ['public/js/wikitsemantics.js'];
+        // Let administrators exclude the calls to Wikit Semantics from the GLPI proxy (Setup > General > System)
+        /** @var ProxyExclusions $proxy_exclusions */
+        $proxy_exclusions = $CFG_GLPI['possible_proxy_exclusions'];
+        $proxy_exclusions->addExclusion(
+            new ProxyExclusion(
+                Config::class,
+                'Wikit Semantics',
+                __('Calls to the Wikit Semantics API', 'wikitsemantics'),
+            ),
+        );
 
-          Plugin::registerClass('PluginWikitsemanticsConfig');
-          Plugin::registerClass(
-              'PluginWikitsemanticsProfile',
-              ['addtabon' => 'Profile']
-          );
-          Plugin::registerClass(
-              'PluginWikitsemanticsKnowledgebase',
-              ['addtabon' => ['Ticket']]
-          );
+        if (Session::getLoginUserID()) {
+            $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['wikitsemantics'] = ['js/wikitsemantics.js'];
 
-         if (isset($_SESSION['glpiactiveprofile']['id'])
-             && (!isset($_SESSION['glpiactiveprofile']['plugin_wikitsemantics_configs'])
-                 || !isset($_SESSION['glpiactiveprofile']['plugin_wikitsemantics_knowledgebase'])
-                 || !isset($_SESSION['glpiactiveprofile']['plugin_wikitsemantics_editorai']))
-         ) {
-             PluginWikitsemanticsProfile::initProfile();
-         }
+            Plugin::registerClass(Config::class);
+            Plugin::registerClass(
+                Profile::class,
+                ['addtabon' => 'Profile'],
+            );
+            Plugin::registerClass(
+                Knowledgebase::class,
+                ['addtabon' => ['Ticket']],
+            );
 
-         if (Session::haveRight("config", UPDATE)) {
-            $PLUGIN_HOOKS['config_page']['wikitsemantics'] = 'front/config.form.php';
-         }
+            if (isset($_SESSION['glpiactiveprofile']['id'])
+                && (!isset($_SESSION['glpiactiveprofile'][Config::$rightname])
+                    || !isset($_SESSION['glpiactiveprofile'][Knowledgebase::$rightname])
+                    || !isset($_SESSION['glpiactiveprofile'][EditorAI::$rightname]))
+            ) {
+                Profile::initProfile();
+            }
 
-          $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['wikitsemantics'] = 'plugin_wikitsemantics_post_item_form';
-      }
-   }
+            if (Session::haveRight(\Config::$rightname, UPDATE)) {
+                $PLUGIN_HOOKS['config_page']['wikitsemantics'] = 'front/config.form.php';
+            }
+
+            $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['wikitsemantics'] = 'plugin_wikitsemantics_post_item_form';
+        }
+    }
 }
 
 
@@ -62,7 +105,8 @@ function plugin_init_wikitsemantics() {
  * REQUIRED
  * @return array
  */
-function plugin_version_wikitsemantics() {
+function plugin_version_wikitsemantics()
+{
     return [
         'name' => 'Wikit Semantics',
         'version' => PLUGIN_WIKITSEMANTICS_VERSION,
@@ -73,7 +117,10 @@ function plugin_version_wikitsemantics() {
             'glpi' => [
                 'min' => PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION,
                 'max' => PLUGIN_WIKITSEMANTICS_MAX_GLPI_VERSION,
-            ]
-        ]
+            ],
+            'php' => [
+                'min' => '8.3',
+            ],
+        ],
     ];
 }

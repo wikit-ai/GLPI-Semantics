@@ -4,5 +4,7 @@ vendor/
 .gh_token
 composer.lock
 *.min.*
-tools
 .DS_Store
+var
+/.vscode/
+/.idea/

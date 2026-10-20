@@ -34,7 +34,7 @@ jobs:
 
           # Copy all repo files (excluding previous archives and .git) into a folder named "wikitsemantics" inside the temp folder
           mkdir release_tmp/wikitsemantics
-          rsync -av --progress . release_tmp/wikitsemantics --exclude "wikitsemantics-*.tar.gz" --exclude "wikitsemantics-*.zip" --exclude "wikitsemantics-*.tar.bz2" --exclude ".git"
+          rsync -av --progress . release_tmp/wikitsemantics --exclude "wikitsemantics-*.tar.gz" --exclude "wikitsemantics-*.zip" --exclude "wikitsemantics-*.tar.bz2" --exclude ".git" --exclude ".github" --exclude ".gitignore" --exclude "tools" --exclude "vendor" --exclude "node_modules" --exclude "var" --exclude "screenshots" --exclude "docs" --exclude ".php-cs-fixer.php" --exclude "rector.php" --exclude "phpstan.neon" --exclude "phpstan-baseline.neon" --exclude ".twig_cs.dist.php" --exclude "eslint.config.mjs" --exclude "Makefile" --exclude "composer.json" --exclude "composer.lock" --exclude "tests" --exclude "phpunit.xml" --exclude ".glpi-coverage.json"
 
           # Create a tar.gz archive
           tar -czf wikitsemantics-${VERSION}.tar.gz -C release_tmp wikitsemantics
