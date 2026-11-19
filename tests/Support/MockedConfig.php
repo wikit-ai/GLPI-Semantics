@@ -39,19 +39,37 @@ final class MockedConfig extends Config
 {
     private HttpClientInterface $client;
 
+    /**
+     * Application type known from a previous call, see `$useAppTypeCache`
+     */
+    private ?string $appType = Config::APP_TYPE_SEMANTICS;
+
+    /**
+     * Whether the application type is read from the GLPI cache as in production, instead of `$appType`
+     */
+    private bool $useAppTypeCache = false;
+
     public function __construct()
     {
         // The parent constructor loads the configuration from the database
     }
 
     /**
-     * @param array<string, mixed> $fields Configuration values
+     * @param array<string, mixed> $fields        Configuration values
+     * @param string|null          $appType         Type of the applications known from a previous call (`Config::APP_TYPE_*`), null when unknown
+     * @param bool                 $useAppTypeCache Read the type of the applications from the GLPI cache instead of using `$appType`
      */
-    public static function create(HttpClientInterface $client, array $fields): self
-    {
+    public static function create(
+        HttpClientInterface $client,
+        array $fields,
+        ?string $appType = Config::APP_TYPE_SEMANTICS,
+        bool $useAppTypeCache = false,
+    ): self {
         $config = new self();
         $config->client = $client;
         $config->fields = $fields;
+        $config->appType = $appType;
+        $config->useAppTypeCache = $useAppTypeCache;
 
         return $config;
     }
@@ -59,5 +77,10 @@ final class MockedConfig extends Config
     protected function getHttpClient(): HttpClientInterface
     {
         return $this->client;
+    }
+
+    protected function getAppType(string $appIdField): ?string
+    {
+        return $this->useAppTypeCache ? parent::getAppType($appIdField) : $this->appType;
     }
 }

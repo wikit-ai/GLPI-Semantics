@@ -83,7 +83,12 @@ if (isset($_POST['ticketId'])) {
     }
 
     $generateAnswer = new GenerateAnswer();
-    $ticketContent = $generateAnswer->getTicketContent($ticketId);
+    // Whole public conversation of the ticket, as context for the application
+    $ticketContent = $generateAnswer->getTicketConversation($ticketId);
+
+    // Release the session lock: the other requests of the user must not wait for the API answer
+    Session::writeClose();
+
     $apiResult = $ticketContent ? Config::getConfig()->getAPIAnswer(['query' => $ticketContent]) : false;
 
     $answer = null;

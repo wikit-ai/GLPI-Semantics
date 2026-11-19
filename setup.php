@@ -36,7 +36,7 @@ use GlpiPlugin\Wikitsemantics\Knowledgebase;
 use GlpiPlugin\Wikitsemantics\Profile;
 
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
-define('PLUGIN_WIKITSEMANTICS_VERSION', '3.0.0');
+define('PLUGIN_WIKITSEMANTICS_VERSION', '3.1.0');
 // Minimal GLPI version, inclusive
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
 define("PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION", "12.0.0");
@@ -95,6 +95,9 @@ function plugin_init_wikitsemantics()
             }
 
             $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['wikitsemantics'] = 'plugin_wikitsemantics_post_item_form';
+
+            // Editor AI configuration added to the pages once the locales are loaded
+            $PLUGIN_HOOKS[Hooks::POST_INIT]['wikitsemantics'] = 'plugin_wikitsemantics_post_init';
         }
     }
 }

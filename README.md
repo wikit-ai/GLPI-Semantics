@@ -23,6 +23,8 @@ This plugin enables users to find in natural language a answer to tickets, conte
 - Support for GLPI 10, 11 and 12 (one major plugin version per GLPI version)
 - Real-time streaming responses (GLPI 11+)
 - Multiple integration points: Followups, Solutions, and Tasks
+- Answer suggestions based on the whole public conversation of the ticket (private followups and tasks are never sent)
+- Classic and workflow Wikit Semantics applications: the Application IDs are entered the same way, the type of each application is detected on the first call and kept in the GLPI cache (quoted sources are only available for classic applications)
 - Knowledge Base articles generated from tickets, placed in the GLPI 12 knowledge base tree with a suggested parent article and a preview of the inherited visibility (GLPI 12+)
 - Editor AI assistant (correction, formatting, translation): magic wand in the rich text editors, including the selection menu of the GLPI 12 knowledge base editor
 
@@ -81,14 +83,76 @@ define('GLPI_SERVERSIDE_URL_ALLOWED_PRIVATE_NETWORKS_CONTEXTS', [
   - Application ID
   - API Key
 
-## Quick Setup
-0. Download repository and rename folder wikitsemantics
-1. Install the plugin in your GLPI plugins directory move folder wikitsemantics to plugins directory, should be something like that : /var/www/html/glpi/marketplace/
-2. Activate the plugin from the GLPI interface
-3. Navigate to the plugin configuration page
-4. Enter your Wikit Semantics API credentials
-5. Test the connection to verify everything is working
-6. Start using AI-powered semantic search in your GLPI instance
+## Installation
+
+1. Download the archive of the version matching your GLPI version from the
+   [GitHub releases](https://github.com/wikit-ai/GLPI-Semantics/releases), e.g. `wikitsemantics-3.1.0.tar.bz2` for GLPI 12
+2. Extract it in the `plugins/` directory of GLPI (the folder must be named `wikitsemantics`):
+   ```bash
+   cd /path/to/glpi/plugins
+   tar -xjf wikitsemantics-3.1.0.tar.bz2
+   ```
+3. Go to **Setup > Plugins**, then **Install** and **Activate** *Wikit Semantics*
+4. Open the plugin configuration (**Setup > Plugins > Wikit Semantics**) and enter your credentials
+5. Click **Test connection**: one message is displayed for each enabled feature
+
+### Upgrading
+
+Replace the `wikitsemantics` folder with the new version, then click **Update** in **Setup > Plugins**
+(or run `php bin/console plugin:install --force wikitsemantics`). The configuration is kept.
+Ask the users to reload their GLPI pages so that their browser loads the new JavaScript.
+
+## Configuration
+
+| Setting | Description |
+|---------|-------------|
+| Wikit Semantics URL base | `https://apis.wikit.ai` for the Wikit cloud (HTTPS only) |
+| Organization ID | Your Wikit Semantics organization |
+| API key | Stored encrypted with the GLPI key, never displayed again |
+| Enable Streaming Mode | Answers displayed token by token |
+| Application ID (Answer) | Application used by the ticket answer suggestion |
+| Enable Knowledge Base generation / Application ID (Knowledge Base) | Knowledge Base article generation from tickets |
+| Enable Editor AI assistant / Application ID (Editor AI) | Correction, formatting and translation in the rich text editors |
+
+### Classic and workflow applications
+
+The Application IDs of classic applications (`/semantics/` API) and of workflow applications
+(`/semantics-workflow/` API) are entered the same way. The type of an application cannot be read
+with an API key: on the first call, the plugin calls the classic API, then the workflow API when the
+classic one fails (the classic API answers with an error 500 for a workflow application). The type
+that answers is kept in the GLPI cache for 24 hours, so the next calls go directly to the right API.
+An application that changes of type is detected again automatically.
+
+Quoted sources (**Sources** button) are only available for classic applications.
+
+### Context sent for the answer suggestion
+
+The whole public conversation of the ticket is sent to the application: title, description, then the
+followups, tasks and solutions in chronological order, with their author and date. **Private followups
+and tasks are never sent**, so that internal notes cannot end up in an answer to the requester. Beyond
+20,000 characters, the oldest messages are omitted (the title and the description are always kept).
+
+### Rights
+
+Configured in **Administration > Profiles > Wikit Semantics**:
+
+| Right | Read | Update |
+|-------|------|--------|
+| Wikit Semantics - Configuration | Answer suggestion button | Plugin configuration |
+| Wikit Semantics - Knowledge Base | Knowledge Base tab on tickets | Article creation |
+| Wikit Semantics - Editor AI | Editor AI assistant | - |
+
+## Troubleshooting
+
+The calls to Wikit Semantics are logged in `files/_log/wikitsemantics.log` (GLPI log directory):
+
+- `WARNING` / `ERROR`: failed calls, with the HTTP code and the URL
+- `INFO ... trying the other API (classic or workflow)`: expected once a day for a workflow application,
+  while its type is detected
+- `DEBUG`: each successful call, written in the GLPI debug mode only
+
+If the connection test fails for an application, check its ID and that the API key belongs to the
+organization; the HTTP code in the log tells which API refused the call.
 
 ## About Wikit Semantics
 

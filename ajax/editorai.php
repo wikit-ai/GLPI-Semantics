@@ -68,6 +68,9 @@ if (isset($languageMap[$action])) {
     $query = $action . ': ' . htmlspecialchars_decode($content);
 }
 
+// Release the session lock: the other requests of the user must not wait for the API answer
+Session::writeClose();
+
 $config = Config::getConfig();
 $result = $config->getAPIAnswer(['query' => $query], 'app_id_editor');
 

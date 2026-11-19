@@ -97,6 +97,9 @@ return new StreamedResponse(static function () {
         return;
     }
 
+    // Release the session lock: the other requests of the user must not wait for the end of the stream
+    Session::writeClose();
+
     // Send suggested title
     echo "event: title\n";
     echo "data: " . json_encode(['title' => $ticket->fields['name']]) . "\n\n";
