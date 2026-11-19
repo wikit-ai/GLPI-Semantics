@@ -87,9 +87,9 @@ return new StreamedResponse(static function () {
         return;
     }
 
-    // Get ticket content
     $generateAnswer = new GenerateAnswer();
-    $ticketContent = $generateAnswer->getTicketContent($ticketId);
+    // Whole public conversation of the ticket, as context for the application
+    $ticketContent = $generateAnswer->getTicketConversation($ticketId);
 
     if (!$ticketContent) {
         echo "event: error\n";
@@ -97,6 +97,9 @@ return new StreamedResponse(static function () {
         flush();
         return;
     }
+
+    // Release the session lock: the other requests of the user must not wait for the end of the stream
+    Session::writeClose();
 
     // Get configuration
     $config = Config::getConfig();

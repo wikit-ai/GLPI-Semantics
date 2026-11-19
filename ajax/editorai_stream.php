@@ -94,6 +94,9 @@ return new StreamedResponse(static function () {
         $query = $action . ': ' . htmlspecialchars_decode($content);
     }
 
+    // Release the session lock: the other requests of the user must not wait for the end of the stream
+    Session::writeClose();
+
     // Get configuration and call streaming API with editor app
     $config = Config::getConfig();
 

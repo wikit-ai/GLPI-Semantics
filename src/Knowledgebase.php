@@ -169,7 +169,14 @@ class Knowledgebase extends CommonDBTM
             $content .= "Followups:\n";
             foreach ($followups as $fu) {
                 // Skip private followups the current user is not allowed to see
-                if (!$followup->getFromDB($fu['id']) || !$followup->canViewItem()) {
+                if (!is_array($fu)) {
+                    continue;
+                }
+
+                // Same as getFromDB() without reading again the row already loaded by find()
+                $followup->getFromResultSet($fu);
+                $followup->post_getFromDB();
+                if (!$followup->canViewItem()) {
                     continue;
                 }
 
@@ -209,7 +216,13 @@ class Knowledgebase extends CommonDBTM
             $content .= "Tasks:\n";
             foreach ($tasks as $t) {
                 // Skip private tasks the current user is not allowed to see
-                if (!$task->getFromDB($t['id']) || !$task->canViewItem()) {
+                if (!is_array($t)) {
+                    continue;
+                }
+
+                $task->getFromResultSet($t);
+                $task->post_getFromDB();
+                if (!$task->canViewItem()) {
                     continue;
                 }
 

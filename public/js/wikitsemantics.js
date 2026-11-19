@@ -129,12 +129,62 @@
         content = wikitSemanticsStripCitations(content);
         content = content.replace(/\n/g, '<br>');
         content = content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        content = content.replace(/__(.+?)__/g, '<strong>$1</strong>');
+        // Underscores only delimit a word, so that identifiers like `app_id_answer` stay intact
+        content = content.replace(/(^|[^\w])__(\S(?:.*?\S)?)__(?![\w])/g, '$1<strong>$2</strong>');
         content = content.replace(/\*(.+?)\*/g, '<em>$1</em>');
-        content = content.replace(/_(.+?)_/g, '<em>$1</em>');
+        content = content.replace(/(^|[^\w])_(\S(?:.*?\S)?)_(?![\w])/g, '$1<em>$2</em>');
         content = content.replace(/`(.+?)`/g, '<code>$1</code>');
         // API output is untrusted (prompt injection): never inject it as raw HTML
         return wikitSemanticsSanitizeHtml(content);
+    }
+
+    /**
+ * TinyMCE editor displayed in the given iframe
+ * @param {HTMLIFrameElement|null} iframe - Iframe of the editor
+ * @returns {object|null} TinyMCE editor, null when the TinyMCE API is not available
+ */
+    function wikitSemanticsGetTinyMCEEditor(iframe) {
+        if (!iframe || typeof tinymce === 'undefined' || typeof tinymce.get !== 'function') {
+            return null;
+        }
+        return tinymce.get().find(
+            editor => editor.iframeElement === iframe || editor.getContentAreaContainer()?.contains(iframe)
+        ) || null;
+    }
+
+    /**
+ * Get the HTML content of the TinyMCE editor displayed in the given iframe
+ * @param {HTMLIFrameElement|null} iframe - Iframe of the editor
+ * @returns {string} Editor HTML content
+ */
+    function wikitSemanticsGetEditorContent(iframe) {
+        const editor = wikitSemanticsGetTinyMCEEditor(iframe);
+        if (editor) {
+            // Serialized content, without the TinyMCE internal markup (data-mce-* attributes, bogus nodes)
+            return editor.getContent();
+        }
+        return iframe?.contentWindow?.document.body?.innerHTML || '';
+    }
+
+    /**
+ * Replace the content of the TinyMCE editor displayed in the given iframe
+ * @param {HTMLIFrameElement|null} iframe - Iframe of the editor
+ * @param {string} html - New content
+ */
+    function wikitSemanticsSetEditorContent(iframe, html) {
+        const editor = wikitSemanticsGetTinyMCEEditor(iframe);
+        if (editor) {
+            // Through the TinyMCE API so that the undo history follows, and as GLPI `setRichTextEditorContent()`:
+            // the keyup event saves the content in the textarea and removes the "required" state
+            editor.setContent(html);
+            editor.undoManager.add();
+            editor.save();
+            editor.dispatch('keyup');
+            return;
+        }
+        if (iframe?.contentWindow?.document.body) {
+            iframe.contentWindow.document.body.innerHTML = html;
+        }
     }
 
     /**
@@ -346,12 +396,8 @@
 
             const selector = `${classMap[itemType]} form[name=asset_form] div.row div.tox-editor-container iframe`;
             const iframe = document.querySelector(selector);
-
-            if (iframe && iframe.contentWindow && iframe.contentWindow.document.body) {
-                const tinymce = iframe.contentWindow.document.body.querySelector('#tinymce p');
-                if (tinymce) {
-                    tinymce.innerHTML = wikitSemanticsStripCitationsFromHtml(result.content);
-                }
+            if (iframe) {
+                wikitSemanticsSetEditorContent(iframe, wikitSemanticsStripCitationsFromHtml(result.content));
             }
         }
 
@@ -395,6 +441,8 @@
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                // Incomplete last line of the previous read, see below
+                let sseBuffer = '';
 
                 const read = () => {
                     reader.read().then(({done, value}) => {
@@ -454,8 +502,10 @@
                             return;
                         }
 
-                        const chunk = decoder.decode(value, {stream: true});
-                        const lines = chunk.split('\n');
+                        // An event can be split between two network reads: keep the incomplete last line
+                        sseBuffer += decoder.decode(value, {stream: true});
+                        const lines = sseBuffer.split('\n');
+                        sseBuffer = lines.pop();
 
                         for (let line of lines) {
                             line = line.trim();
@@ -716,28 +766,32 @@
         initializeWikitSemanticsButtons();
     }
 
-    // Re-initialize when GLPI dynamically loads content (AJAX forms)
-    // Use MutationObserver to detect new button containers added to the DOM
+    // Re-initialize when GLPI dynamically loads content (AJAX forms and tabs).
+    // A single observer for the answer buttons and the Knowledge Base tabs, which only looks for
+    // containers not initialized yet.
+    const WIKIT_SEMANTICS_PENDING_BUTTONS = '.wikitsemantics-button-container:not([data-initialized])';
+    const WIKIT_SEMANTICS_PENDING_KB_TABS = '.wikitsemantics-kb-container:not([data-initialized])';
     const observer = new MutationObserver((mutations) => {
-        let shouldReinitialize = false;
-        mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === 1) { // Element node
-                    if (node.classList && node.classList.contains('wikitsemantics-button-container')) {
-                        shouldReinitialize = true;
-                    } else if (node.querySelector && node.querySelector('.wikitsemantics-button-container')) {
-                        shouldReinitialize = true;
-                    }
+        let hasButtons = false;
+        let hasKbTabs = false;
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== Node.ELEMENT_NODE) {
+                    continue;
                 }
-            });
-        });
+                hasButtons = hasButtons || node.matches(WIKIT_SEMANTICS_PENDING_BUTTONS) || node.querySelector(WIKIT_SEMANTICS_PENDING_BUTTONS) !== null;
+                hasKbTabs = hasKbTabs || node.matches(WIKIT_SEMANTICS_PENDING_KB_TABS) || node.querySelector(WIKIT_SEMANTICS_PENDING_KB_TABS) !== null;
+            }
+        }
 
-        if (shouldReinitialize) {
+        if (hasButtons) {
             initializeWikitSemanticsButtons();
+        }
+        if (hasKbTabs) {
+            initializeWikitSemanticsKBTabs();
         }
     });
 
-    // Start observing the document for DOM changes
     observer.observe(document.body, {
         childList: true,
         subtree: true
@@ -784,6 +838,8 @@
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                // Incomplete last line of the previous read, see below
+                let sseBuffer = '';
                 let contentShown = false;
                 let streamError = false;
 
@@ -804,8 +860,10 @@
                             return;
                         }
 
-                        const chunk = decoder.decode(value, {stream: true});
-                        const lines = chunk.split('\n');
+                        // An event can be split between two network reads: keep the incomplete last line
+                        sseBuffer += decoder.decode(value, {stream: true});
+                        const lines = sseBuffer.split('\n');
+                        sseBuffer = lines.pop();
 
                         for (let line of lines) {
                             line = line.trim();
@@ -1069,29 +1127,7 @@
         initializeWikitSemanticsKBTabs();
     }
 
-    // Observe for dynamically loaded KB tabs (GLPI loads tabs via AJAX)
-    const kbObserver = new MutationObserver((mutations) => {
-        let shouldReinitialize = false;
-        mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === 1) {
-                    if (node.classList && node.classList.contains('wikitsemantics-kb-container')) {
-                        shouldReinitialize = true;
-                    } else if (node.querySelector && node.querySelector('.wikitsemantics-kb-container')) {
-                        shouldReinitialize = true;
-                    }
-                }
-            });
-        });
-        if (shouldReinitialize) {
-            initializeWikitSemanticsKBTabs();
-        }
-    });
-
-    kbObserver.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    // KB tabs loaded later through AJAX: see the observer of the answer buttons above
 
     // ============================================================================
     // Editor AI Assistant — Magic Wand for TinyMCE
@@ -1131,11 +1167,7 @@
      * @returns {string} Editor HTML content
      */
         getEditorContent(iframe) {
-            if (iframe && iframe.contentWindow && iframe.contentWindow.document.body) {
-                const body = iframe.contentWindow.document.body;
-                return body.innerHTML || '';
-            }
-            return '';
+            return wikitSemanticsGetEditorContent(iframe);
         }
 
         /**
@@ -1144,9 +1176,7 @@
      * @param {string} html
      */
         setEditorContent(iframe, html) {
-            if (iframe && iframe.contentWindow && iframe.contentWindow.document.body) {
-                iframe.contentWindow.document.body.innerHTML = html;
-            }
+            wikitSemanticsSetEditorContent(iframe, html);
         }
 
         /**
@@ -1256,6 +1286,8 @@
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                // Incomplete last line of the previous read, see below
+                let sseBuffer = '';
                 let streamError = false;
 
                 const read = () => {
@@ -1273,8 +1305,10 @@
                             return;
                         }
 
-                        const chunk = decoder.decode(value, {stream: true});
-                        const lines = chunk.split('\n');
+                        // An event can be split between two network reads: keep the incomplete last line
+                        sseBuffer += decoder.decode(value, {stream: true});
+                        const lines = sseBuffer.split('\n');
+                        sseBuffer = lines.pop();
 
                         for (let line of lines) {
                             line = line.trim();
@@ -1675,8 +1709,28 @@
     }
 
     /**
- * Load Editor AI config via AJAX and initialize
- * This runs on every page — the AJAX endpoint checks rights and config
+ * Editor AI configuration: added to the page by the plugin (meta tag, no request needed),
+ * or loaded through AJAX when the page has no such tag
+ * @returns {Promise<object>}
+ */
+    function getEditorAIConfig() {
+        const meta = document.querySelector('meta[name="wikitsemantics-editor-ai"]');
+        if (meta) {
+            try {
+                return Promise.resolve(JSON.parse(meta.getAttribute('content')));
+            } catch (e) {
+                console.error('[WikitSemantics EditorAI] Invalid configuration in the page:', e);
+            }
+        }
+
+        return fetch(`${CFG_GLPI.root_doc  }/plugins/wikitsemantics/ajax/editorai_config.php`, {
+            method: 'GET',
+            credentials: 'same-origin',
+        }).then(response => response.json());
+    }
+
+    /**
+ * Load Editor AI config and initialize
  */
     function loadAndInitEditorAI() {
     // Already loaded
@@ -1685,11 +1739,7 @@
             return;
         }
 
-        fetch(`${CFG_GLPI.root_doc  }/plugins/wikitsemantics/ajax/editorai_config.php`, {
-            method: 'GET',
-            credentials: 'same-origin',
-        })
-            .then(response => response.json())
+        getEditorAIConfig()
             .then(config => {
                 window.wikitSemanticsEditorAIConfig = config;
 
@@ -1760,15 +1810,13 @@
 
                 if (typeof tinymce !== 'undefined') {
                     hookTinyMCE();
-                } else {
-                    // tinymce not yet loaded — wait for it
-                    const waitForTinyMCE = setInterval(() => {
+                } else if (document.readyState !== 'complete') {
+                    // TinyMCE not loaded yet: check again once the page is loaded, instead of polling
+                    window.addEventListener('load', () => {
                         if (typeof tinymce !== 'undefined') {
-                            clearInterval(waitForTinyMCE);
                             hookTinyMCE();
                         }
-                    }, 300);
-                    setTimeout(() => clearInterval(waitForTinyMCE), 15000);
+                    }, { once: true });
                 }
             })
             .catch(error => {

@@ -19,12 +19,6 @@ parameters:
 			path: ajax/editorai.php
 
 		-
-			message: '#^Cannot cast mixed to int\.$#'
-			identifier: cast.int
-			count: 1
-			path: ajax/editorai_config.php
-
-		-
 			message: '#^Parameter \#1 \$string of function htmlspecialchars_decode expects string, mixed given\.$#'
 			identifier: argument.type
 			count: 2
@@ -141,7 +135,7 @@ parameters:
 		-
 			message: '#^Cannot access offset ''wikitsemantics'' on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
-			count: 3
+			count: 4
 			path: setup.php
 
 		-
@@ -157,12 +151,6 @@ parameters:
 			path: setup.php
 
 		-
-			message: '#^Binary operation "\." between ''/semantics/apps/'' and mixed results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 3
-			path: src/Config.php
-
-		-
 			message: '#^Binary operation "\." between mixed and ''/plugins…'' results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1
@@ -175,15 +163,9 @@ parameters:
 			path: src/Config.php
 
 		-
-			message: '#^Cannot access offset ''chunk'' on mixed\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Config.php
-
-		-
 			message: '#^Cannot access offset ''queryId'' on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
-			count: 2
+			count: 1
 			path: src/Config.php
 
 		-
@@ -369,13 +351,7 @@ parameters:
 		-
 			message: '#^Cannot access offset ''content'' on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
-			count: 3
-			path: src/Knowledgebase.php
-
-		-
-			message: '#^Cannot access offset ''id'' on mixed\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 2
+			count: 1
 			path: src/Knowledgebase.php
 
 		-
@@ -394,12 +370,6 @@ parameters:
 			message: '#^Cannot cast mixed to int\.$#'
 			identifier: cast.int
 			count: 5
-			path: src/Knowledgebase.php
-
-		-
-			message: '#^Parameter \#1 \$ID of method CommonDBTM\:\:getFromDB\(\) expects int\|string, mixed given\.$#'
-			identifier: argument.type
-			count: 2
 			path: src/Knowledgebase.php
 
 		-

@@ -30,6 +30,7 @@
 namespace GlpiPlugin\Wikitsemantics;
 
 use Safe\Exceptions\FilesystemException;
+use Session;
 
 use function Safe\file_put_contents;
 use function Safe\json_encode;
@@ -82,8 +83,16 @@ class Logger
         }
     }
 
+    /**
+     * Debug entries are written in the GLPI debug mode only: a line for each API call would
+     * make the log grow quickly
+     */
     public static function debug(string $message, array $context = []): void
     {
+        if (($_SESSION['glpi_use_mode'] ?? null) !== Session::DEBUG_MODE) {
+            return;
+        }
+
         self::getInstance()->log('DEBUG', $message, $context);
     }
 

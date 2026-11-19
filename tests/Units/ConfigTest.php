@@ -48,8 +48,12 @@ final class ConfigTest extends DbTestCase
      * @param array<MockResponse>|callable $responses
      * @param array<string, mixed>         $fields
      */
-    private function getMockedConfig(array|callable $responses, array $fields = []): MockedConfig
-    {
+    private function getMockedConfig(
+        array|callable $responses,
+        array $fields = [],
+        ?string $appType = Config::APP_TYPE_SEMANTICS,
+        bool $useAppTypeCache = false,
+    ): MockedConfig {
         return MockedConfig::create(new MockHttpClient($responses), $fields + [
             'url_api'         => 'https://wikit.example.com/',
             'api_key'         => 'encrypted:' . (new GLPIKey())->encrypt('secret-key'),
@@ -57,8 +61,16 @@ final class ConfigTest extends DbTestCase
             'app_id_answer'   => 'app-answer',
             'app_id_kb'       => 'app-kb',
             'app_id_editor'   => 'app-editor',
-        ]);
+        ], $appType, $useAppTypeCache);
     }
+
+    /**
+     * Stream sent by the workflow gateway: text chunks, keep-alive comment, event without text
+     */
+    private const string WORKFLOW_STREAM = 'data: {"conversationId": "c-1", "queryId": "q-1", "chunk": "Restart "}STOP' . "\n\n"
+        . ": ping\n\n"
+        . 'data: {"conversationId": "c-1", "queryId": "q-1", "metadata": {"events": []}, "chunk": ""}STOP' . "\n\n"
+        . 'data: {"conversationId": "c-1", "queryId": "q-1", "chunk": "the printer"}STOP' . "\n\n";
 
     public function testPrepareInputRejectsNonHttpsUrl(): void
     {
@@ -138,6 +150,111 @@ final class ConfigTest extends DbTestCase
         });
 
         $this->assertSame(['answer' => 'Article', 'queryId' => null], $config->getAPIAnswer(['query' => 'Ticket'], 'app_id_kb'));
+    }
+
+    public function testGetApiAnswerReadsTheWorkflowStream(): void
+    {
+        $requests = [];
+        $config = $this->getMockedConfig(function (string $method, string $url, array $options) use (&$requests): MockResponse {
+            $requests[] = ['method' => $method, 'url' => $url, 'body' => $options['body']];
+
+            return new MockResponse(self::WORKFLOW_STREAM, ['response_headers' => ['content-type' => 'text/event-stream']]);
+        }, [], Config::APP_TYPE_WORKFLOW);
+
+        $this->assertSame(
+            ['answer' => 'Restart the printer', 'queryId' => 'q-1'],
+            $config->getAPIAnswer(['query' => 'Printer is down']),
+        );
+        $this->assertCount(1, $requests);
+        $this->assertSame('POST', $requests[0]['method']);
+        $this->assertSame('https://wikit.example.com/semantics-workflow/apps/app-answer/query-executions', $requests[0]['url']);
+        $this->assertSame('{"query":"Printer is down"}', $requests[0]['body']);
+    }
+
+    public function testGetApiAnswerFailsOnAnEmptyWorkflowStream(): void
+    {
+        // The workflow gateway answers with an empty stream when the execution fails, then the classic API fails too
+        $config = $this->getMockedConfig([
+            new MockResponse(": ping\n\n"),
+            new MockResponse('Internal Server Error', ['http_code' => 500]),
+        ], [], Config::APP_TYPE_WORKFLOW);
+
+        $this->assertFalse($config->getAPIAnswer(['query' => 'Printer is down']));
+    }
+
+    /**
+     * Mock of the Wikit Semantics API for an application of the given type: the classic API answers
+     * with an error 500 for a workflow application, the workflow API with an empty stream for a
+     * classic application (as the real APIs)
+     *
+     * @param list<string> $urls Called URLs
+     */
+    private function getMockedApiFor(string $appType, array &$urls): callable
+    {
+        return function (string $method, string $url) use ($appType, &$urls): MockResponse {
+            $urls[] = $method . ' ' . $url;
+            $isWorkflowApi = str_contains($url, '/semantics-workflow/');
+
+            return match (true) {
+                $isWorkflowApi && $appType === Config::APP_TYPE_WORKFLOW   => new MockResponse(self::WORKFLOW_STREAM),
+                $isWorkflowApi                                              => new MockResponse('', ['http_code' => 201]),
+                $appType === Config::APP_TYPE_SEMANTICS                     => new MockResponse('{"answer": "Restart the printer", "queryId": "q-1"}'),
+                default                                                     => new MockResponse('Internal Server Error', ['http_code' => 500]),
+            };
+        };
+    }
+
+    public function testWorkflowAppIsDetectedAndRemembered(): void
+    {
+        $appId = 'app-workflow-' . mt_rand();
+        $urls = [];
+        $config = $this->getMockedConfig($this->getMockedApiFor(Config::APP_TYPE_WORKFLOW, $urls), ['app_id_answer' => $appId], null, true);
+
+        $this->assertSame('Restart the printer', $config->getAPIAnswer(['query' => 'Printer is down'])['answer'] ?? null);
+        // The type is kept: the workflow API is called directly
+        $this->assertSame('Restart the printer', $config->getAPIAnswer(['query' => 'Printer is still down'])['answer'] ?? null);
+        $this->assertSame([
+            'POST https://wikit.example.com/semantics/apps/' . $appId . '/query-executions',
+            'POST https://wikit.example.com/semantics-workflow/apps/' . $appId . '/query-executions',
+            'POST https://wikit.example.com/semantics-workflow/apps/' . $appId . '/query-executions',
+        ], $urls);
+    }
+
+    public function testClassicAppIsCalledDirectly(): void
+    {
+        $appId = 'app-classic-' . mt_rand();
+        $urls = [];
+        $config = $this->getMockedConfig($this->getMockedApiFor(Config::APP_TYPE_SEMANTICS, $urls), ['app_id_answer' => $appId], null, true);
+
+        $this->assertSame(['answer' => 'Restart the printer', 'queryId' => 'q-1'], $config->getAPIAnswer(['query' => 'Printer is down']));
+        $this->assertSame(['POST https://wikit.example.com/semantics/apps/' . $appId . '/query-executions'], $urls);
+    }
+
+    public function testAppTypeChangeIsDetected(): void
+    {
+        // Known as a workflow, the application is now a classic one
+        $urls = [];
+        $config = $this->getMockedConfig($this->getMockedApiFor(Config::APP_TYPE_SEMANTICS, $urls), [], Config::APP_TYPE_WORKFLOW);
+
+        $this->assertSame(['answer' => 'Restart the printer', 'queryId' => 'q-1'], $config->getAPIAnswer(['query' => 'Printer is down']));
+        $this->assertCount(2, $urls);
+        $this->assertStringContainsString('/semantics-workflow/apps/', $urls[0]);
+        $this->assertStringContainsString('/semantics/apps/', $urls[1]);
+    }
+
+    public function testNoFallbackToWorkflowOnAuthenticationError(): void
+    {
+        $config = $this->getMockedConfig([
+            new MockResponse('{"message": "Unauthorized"}', ['http_code' => 401]),
+        ], [], null);
+
+        $this->assertFalse($config->getAPIAnswer(['query' => 'Printer is down']));
+    }
+
+    public function testWorkflowAppsHaveNoQuotedSources(): void
+    {
+        // No request is expected: the mock client has no response
+        $this->assertSame([], $this->getMockedConfig([], [], Config::APP_TYPE_WORKFLOW)->getQuotedSources('q-1'));
     }
 
     public function testApiCallReportsHttpErrors(): void
@@ -226,15 +343,90 @@ final class ConfigTest extends DbTestCase
         $this->streamAnswer($config, ['query' => 'Printer is down']);
     }
 
+    public function testStreamApiAnswerKeepsStopWrittenInTheText(): void
+    {
+        $config = $this->getMockedConfig([new MockResponse([
+            'data: {"chunk": "Press STOP, then STOP"}STOP',
+            'data: not jsonSTOP',
+            'data: {"chunk": " again"}ST',
+            'OP',
+        ])]);
+
+        $this->expectOutputString(
+            "event: chunk\ndata: {\"chunk\":\"Press STOP, then STOP\"}\n\n"
+            . "event: chunk\ndata: {\"chunk\":\" again\"}\n\n",
+        );
+
+        $this->streamAnswer($config, ['query' => 'Printer is down']);
+    }
+
     public function testStreamApiAnswerUsesStreamMode(): void
     {
         $config = $this->getMockedConfig(function (string $method, string $url): MockResponse {
             $this->assertSame('https://wikit.example.com/semantics/apps/app-editor/query-executions?is_stream_mode=true', $url);
 
-            return new MockResponse('');
+            return new MockResponse('data: {"chunk": "Bonjour"}STOP');
         });
 
+        $this->expectOutputString("event: chunk\ndata: {\"chunk\":\"Bonjour\"}\n\n");
+
         $this->streamAnswer($config, ['query' => 'correction: Bonjour'], 'app_id_editor');
+    }
+
+    public function testStreamApiAnswerFromWorkflow(): void
+    {
+        $config = $this->getMockedConfig(function (string $method, string $url): MockResponse {
+            // Workflow applications always stream: no stream mode parameter
+            $this->assertSame('https://wikit.example.com/semantics-workflow/apps/app-answer/query-executions', $url);
+
+            return new MockResponse(self::WORKFLOW_STREAM);
+        }, [], Config::APP_TYPE_WORKFLOW);
+
+        // The event without text (metadata) is not sent
+        $this->expectOutputString(
+            "event: chunk\ndata: {\"chunk\":\"Restart \",\"queryId\":\"q-1\"}\n\n"
+            . "event: chunk\ndata: {\"chunk\":\"the printer\",\"queryId\":\"q-1\"}\n\n",
+        );
+
+        $this->streamAnswer($config, ['query' => 'Printer is down']);
+    }
+
+    public function testStreamApiAnswerFallsBackToWorkflow(): void
+    {
+        $urls = [];
+        $config = $this->getMockedConfig($this->getMockedApiFor(Config::APP_TYPE_WORKFLOW, $urls), [], null);
+
+        // The queryId of the event without text is sent with the next chunk
+        $this->expectOutputString(
+            "event: chunk\ndata: {\"chunk\":\"Restart \",\"queryId\":\"q-1\"}\n\n"
+            . "event: chunk\ndata: {\"chunk\":\"the printer\",\"queryId\":\"q-1\"}\n\n",
+        );
+
+        $this->streamAnswer($config, ['query' => 'Printer is down']);
+        $this->assertCount(2, $urls);
+    }
+
+    public function testStreamApiAnswerFallsBackToClassic(): void
+    {
+        // Known as a workflow, the application is now a classic one: the empty workflow stream sends nothing
+        $config = $this->getMockedConfig([
+            new MockResponse('data: {"queryId": "q-0", "metadata": {}, "chunk": ""}STOP' . "\n\n"),
+            new MockResponse('data: {"queryId": "q-1", "chunk": "Restart"}STOP'),
+        ], [], Config::APP_TYPE_WORKFLOW);
+
+        $this->expectOutputString("event: chunk\ndata: {\"chunk\":\"Restart\",\"queryId\":\"q-1\"}\n\n");
+
+        $this->streamAnswer($config, ['query' => 'Printer is down']);
+    }
+
+    public function testStreamApiAnswerReportsEmptyAnswers(): void
+    {
+        $config = $this->getMockedConfig([new MockResponse(''), new MockResponse(": ping\n\n")]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Wikit Semantics API returned an empty answer');
+
+        $this->streamAnswer($config, ['query' => 'Printer is down']);
     }
 
     public function testStreamApiAnswerReportsHttpErrors(): void
