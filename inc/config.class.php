@@ -17,13 +17,42 @@ class PluginWikitsemanticsConfig extends CommonDBTM
    public static $rightname = 'plugin_wikitsemantics_configs';
     public $dohistory = true;
 
-   public function __construct() {
-       /** @var \DBmysql $DB */
-       global $DB;
-      if ($DB->tableExists(self::getTable())) {
-          $this->getFromDB(1);
-      }
-   }
+    /**
+     * Maximum duration of a call that generates an answer (streamed or workflow), in seconds
+     */
+    public const STREAM_MAX_DURATION = 180;
+
+    /**
+     * Classic application, called through `/semantics/apps/...`
+     */
+    public const APP_TYPE_SEMANTICS = 'semantics';
+
+    /**
+     * Workflow application, called through `/semantics-workflow/apps/...`
+     */
+    public const APP_TYPE_WORKFLOW = 'semantics-workflow';
+
+    /**
+     * Lifetime of the application types and page settings kept in the GLPI cache, in seconds
+     */
+    public const APP_TYPE_CACHE_TTL = 86400;
+
+    /**
+     * Name of the meta tag holding the Editor AI client configuration in the GLPI pages
+     */
+    public const EDITOR_AI_CLIENT_CONFIG_META = 'wikitsemantics-editor-ai';
+
+    /**
+     * GLPI cache key of the settings used on every page, see `getPageSettings()`
+     */
+    private const PAGE_SETTINGS_CACHE_KEY = 'wikitsemantics_page_settings';
+
+    /**
+     * Application types already known during this request, by cache key
+     *
+     * @var array<string, string>
+     */
+    private $appTypes = [];
 
    public static function canView(): bool {
        return Session::haveRight(self::$rightname, READ);
@@ -89,14 +118,105 @@ class PluginWikitsemanticsConfig extends CommonDBTM
    public static function getConfig($update = false) {
        static $config = null;
 
+       // The configuration is read once per request, not each time the class is instantiated
+       // (e.g. by the GLPI history and search)
       if (is_null($config)) {
           $config = new self();
-      }
-      if ($update) {
+          $config->getFromDB(1);
+      } else if ($update) {
           $config->getFromDB(1);
       }
 
        return $config;
+   }
+
+    /**
+     * Settings needed on every GLPI page (Editor AI assistant), kept in the GLPI cache so that
+     * no database query is needed to display a page. The cache is cleared when the
+     * configuration is saved.
+     *
+     * @return array{is_editor_ai_enabled: bool, is_streaming_enabled: bool}
+     */
+   public static function getPageSettings(): array {
+       /** @var \Psr\SimpleCache\CacheInterface $GLPI_CACHE */
+       global $GLPI_CACHE;
+
+       $settings = $GLPI_CACHE->get(self::PAGE_SETTINGS_CACHE_KEY);
+      if (is_array($settings)
+           && is_bool($settings['is_editor_ai_enabled'] ?? null)
+           && is_bool($settings['is_streaming_enabled'] ?? null)
+       ) {
+          return [
+              'is_editor_ai_enabled' => $settings['is_editor_ai_enabled'],
+              'is_streaming_enabled' => $settings['is_streaming_enabled'],
+          ];
+      }
+
+       $config = self::getConfig(true);
+       $settings = [
+           'is_editor_ai_enabled' => !empty($config->fields['is_editor_ai_enabled']) && $config->getStringField('app_id_editor') !== '',
+           'is_streaming_enabled' => !empty($config->fields['is_streaming_enabled']),
+       ];
+       $GLPI_CACHE->set(self::PAGE_SETTINGS_CACHE_KEY, $settings, self::APP_TYPE_CACHE_TTL);
+
+       return $settings;
+   }
+
+    /**
+     * Configuration of the Editor AI assistant for the JavaScript of the GLPI pages.
+     *
+     * It needs no database query (settings kept in the GLPI cache): it is added to every page
+     * (meta tag, see `plugin_wikitsemantics_post_init()`), and returned by `ajax/editorai_config.php`.
+     *
+     * @return array<string, mixed>
+     */
+   public static function getEditorAIClientConfig(): array {
+       /** @var array $CFG_GLPI */
+       global $CFG_GLPI;
+
+      if (!Session::getLoginUserID() || !Session::haveRight('plugin_wikitsemantics_editorai', READ)) {
+          return ['enabled' => false];
+      }
+
+       $settings = self::getPageSettings();
+      if (!$settings['is_editor_ai_enabled']) {
+          return ['enabled' => false];
+      }
+
+       $pluginWebPath = $CFG_GLPI['root_doc'] . '/plugins/wikitsemantics';
+
+       return [
+           'enabled'            => true,
+           'isStreamingEnabled' => (int)$settings['is_streaming_enabled'],
+           'ajaxUrl'            => $pluginWebPath . '/ajax/editorai.php',
+           'ajaxStreamUrl'      => $pluginWebPath . '/ajax/editorai_stream.php',
+           'labels'             => [
+               'editorAI'    => __('Editor AI assistant', 'wikitsemantics'),
+               'correction'  => __('Correction', 'wikitsemantics'),
+               'formatting'  => __('Formatting', 'wikitsemantics'),
+               'translation' => __('Translation', 'wikitsemantics'),
+               'apply'       => __('Apply', 'wikitsemantics'),
+               'close'       => __('Close', 'wikitsemantics'),
+               'error'       => __('GLPI encountered a problem connecting to the Wikit Semantics application. Please try again later.', 'wikitsemantics'),
+           ],
+       ];
+   }
+
+   public function post_addItem() {
+       parent::post_addItem();
+       self::clearPageSettingsCache();
+   }
+
+   public function post_updateItem($history = true) {
+       parent::post_updateItem($history);
+       self::clearPageSettingsCache();
+   }
+
+   private static function clearPageSettingsCache(): void {
+       /** @var \Psr\SimpleCache\CacheInterface $GLPI_CACHE */
+       global $GLPI_CACHE;
+
+       $GLPI_CACHE->delete(self::PAGE_SETTINGS_CACHE_KEY);
    }
 
     /**
@@ -369,24 +489,121 @@ class PluginWikitsemanticsConfig extends CommonDBTM
     /**
      * Get AI answer from Wikit Semantics API
      *
+     * Classic applications answer with JSON, workflow applications always answer with a stream
+     * of events which is read entirely. See `getAppTypesToTry()` for the choice of the API.
+     *
      * @param array|null $dataToPost Data containing the query
      * @param string $appIdField Config field name for the app ID
      * @return array|false Array with 'answer' and 'queryId' keys, or false on error
      */
    public function getAPIAnswer($dataToPost = null, $appIdField = 'app_id_answer') {
-       $url = '/semantics/apps/' . $this->fields[$appIdField] . '/query-executions';
        $dataToPost = $this->cleanDataToPostQuery($dataToPost);
 
-       $return = $this->APICall($url, $dataToPost);
+       $appTypes = $this->getAppTypesToTry($appIdField);
+       $lastAppType = end($appTypes);
+
+      foreach ($appTypes as $appType) {
+          $hasFallback = $appType !== $lastAppType;
+          [$result, $mayBeWrongType] = $appType === self::APP_TYPE_WORKFLOW
+              ? $this->getWorkflowAnswer($dataToPost, $appIdField, $hasFallback)
+              : $this->getClassicAnswer($dataToPost, $appIdField, $hasFallback);
+
+         if ($result !== false) {
+             $this->rememberAppType($appIdField, $appType);
+             return $result;
+         }
+
+         if (!$mayBeWrongType) {
+             break;
+         }
+      }
+
+       return false;
+   }
+
+    /**
+     * Get the answer of a classic application
+     *
+     * @param array|null $dataToPost  Data containing the query
+     * @param string     $appIdField  Config field name for the app ID
+     * @param bool       $hasFallback Whether the workflow API will be tried after an error
+     * @return array{0: array|false, 1: bool} Answer (false on error), and whether the error may
+     *                                        mean that the application is a workflow
+     */
+   private function getClassicAnswer($dataToPost, string $appIdField, bool $hasFallback): array {
+       $url = $this->getAppPath(self::APP_TYPE_SEMANTICS, $appIdField, '/query-executions');
+       $return = $this->APICall($url, $dataToPost, 'POST', false);
 
       if ($return['httpCode'] == 200) {
-          return [
+          return [[
               'answer'  => $return['data']['answer'] ?? '',
               'queryId' => $return['data']['queryId'] ?? null,
-          ];
-      } else {
-          return false;
+          ], false];
       }
+
+       $mayBeWrongType = $this->isWrongAppTypeStatus((int)$return['httpCode']);
+      if ($return['httpCode'] !== 0) {
+          $this->logFailedAttempt(
+              'API returned HTTP error',
+              ['http_code' => $return['httpCode'], 'url' => $url],
+              $mayBeWrongType && $hasFallback
+          );
+      }
+
+       return [false, $mayBeWrongType];
+   }
+
+    /**
+     * Get the complete answer of a workflow application, by reading its whole stream of events
+     *
+     * @param array|null $dataToPost  Data containing the query
+     * @param string     $appIdField  Config field name for the app ID
+     * @param bool       $hasFallback Whether the classic API will be tried after an error
+     * @return array{0: array|false, 1: bool} Answer (false on error), and whether the error may
+     *                                        mean that the application is a classic one
+     */
+   private function getWorkflowAnswer($dataToPost, string $appIdField, bool $hasFallback): array {
+      if (!isset($dataToPost['query'])) {
+          $dataToPost = ['query' => 'Il fait beau aujourd\'hui ?'];
+      }
+
+       $url = $this->getAPIUrl($this->getAppPath(self::APP_TYPE_WORKFLOW, $appIdField, '/query-executions'));
+       $ch = $this->initCurl($url, self::STREAM_MAX_DURATION);
+       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+       curl_setopt($ch, CURLOPT_POST, 1);
+       curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dataToPost));
+
+       $content = curl_exec($ch);
+       $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+      if ($content === false) {
+          PluginWikitsemanticsLogger::error("API call failed (cURL)", ['error' => curl_error($ch), 'url' => $url]);
+          return [false, false];
+      }
+
+      if ($httpCode >= 400) {
+          $mayBeWrongType = $this->isWrongAppTypeStatus($httpCode);
+          $this->logFailedAttempt('API returned HTTP error', ['http_code' => $httpCode, 'url' => $url], $mayBeWrongType && $hasFallback);
+          return [false, $mayBeWrongType];
+      }
+
+       $answer = '';
+       $queryId = null;
+      foreach ($this->extractStreamEvents($content) as $event) {
+          $answer .= $event['chunk'];
+          $queryId ??= $event['queryId'] ?? null;
+      }
+
+       // The workflow gateway answers with an empty stream when the execution fails,
+       // for instance when the application is not a workflow
+      if (trim($answer) === '') {
+          $this->logFailedAttempt('Workflow returned an empty answer', ['url' => $url], $hasFallback);
+          return [false, true];
+      }
+
+       PluginWikitsemanticsLogger::debug("API call successful", ['http_code' => $httpCode, 'url' => $url]);
+
+       return [['answer' => $answer, 'queryId' => $queryId], false];
    }
 
     /**
@@ -397,8 +614,16 @@ class PluginWikitsemanticsConfig extends CommonDBTM
      * @return array|false Array of sources or false on error
      */
    public function getQuotedSources(string $queryId, string $appIdField = 'app_id_answer') {
-       $url = '/semantics/apps/' . $this->fields[$appIdField]
-           . '/query-execution-sources/' . urlencode($queryId) . '/get-quoted-sources';
+       // The quoted sources are not available for the workflow applications
+      if ($this->getAppType($appIdField) === self::APP_TYPE_WORKFLOW) {
+          return [];
+      }
+
+       $url = $this->getAppPath(
+           self::APP_TYPE_SEMANTICS,
+           $appIdField,
+           '/query-execution-sources/' . urlencode($queryId) . '/get-quoted-sources'
+       );
 
        $return = $this->APICall($url, null, 'GET');
 
@@ -424,167 +649,379 @@ class PluginWikitsemanticsConfig extends CommonDBTM
      * Stream AI answer from Wikit Semantics API using SSE
      * Outputs Server-Sent Events directly to the response stream
      *
+     * See `getAppTypesToTry()` for the choice of the API: nothing is sent before the application
+     * answers with some text, so that the other API can still be tried.
+     *
      * @param array $dataToPost Data containing the query
      * @param string $appIdField Config field name for the app ID
      * @return void
+     *
+     * @throws \RuntimeException When the API cannot be reached, returns an HTTP error or an empty answer
      */
    public function streamAPIAnswer($dataToPost, $appIdField = 'app_id_answer') {
-       global $CFG_GLPI;
-
       if (!isset($dataToPost['query'])) {
           $dataToPost = ['query' => 'Hello ! Je suis un test venant du plugin GLPI !'];
       }
-       $dataToPost = $this->cleanDataToPostQuery($dataToPost);
 
-       $proxy_host  = !empty($CFG_GLPI["proxy_name"]) ? ($CFG_GLPI["proxy_name"] . ":" . $CFG_GLPI["proxy_port"]) : false;
-       $proxy_ident = !empty($CFG_GLPI["proxy_user"]) ? ($CFG_GLPI["proxy_user"] . ":" .
-           (new GLPIKey())->decrypt($CFG_GLPI["proxy_passwd"])) : false;
+       $dataToPost = $this->cleanDataToPostQuery($dataToPost) ?? [];
+       $appTypes = $this->getAppTypesToTry($appIdField);
+       $lastAppType = end($appTypes);
 
-       // Build URL with streaming parameter
-       $url = '/semantics/apps/' . $this->fields[$appIdField] . '/query-executions?is_stream_mode=true';
+      foreach ($appTypes as $appType) {
+          [$hasText, $httpCode] = $this->streamFrom($appType, $appIdField, $dataToPost);
 
-      if (substr($this->fields['url_api'], -1) == '/') {
-          $url = substr($this->fields['url_api'], 0, -1) . $url;
-      } else {
-          $url = $this->fields['url_api'] . $url;
+         if ($hasText) {
+             $this->rememberAppType($appIdField, $appType);
+             return;
+         }
+
+         if ($httpCode >= 400) {
+            if ($appType === $lastAppType || !$this->isWrongAppTypeStatus($httpCode)) {
+                PluginWikitsemanticsLogger::warning("API returned HTTP error", ['http_code' => $httpCode, 'app_type' => $appType]);
+                throw new \RuntimeException(sprintf('Wikit Semantics API returned HTTP %d', $httpCode));
+            }
+
+             $this->logFailedAttempt('API returned HTTP error', ['http_code' => $httpCode, 'app_type' => $appType], true);
+             continue;
+         }
+
+          // Empty answer: the workflow gateway answers this way when the application is not a workflow
+          $this->logFailedAttempt('API returned an empty answer', ['app_type' => $appType], $appType !== $lastAppType);
       }
 
-       // Decrypt API key before use
-       $api_key = $this->fields['api_key'];
-      if (!empty($api_key) && strpos($api_key, 'encrypted:') === 0) {
-          $api_key = (new GLPIKey())->decrypt(substr($api_key, 10));
-      }
+       throw new \RuntimeException('Wikit Semantics API returned an empty answer');
+   }
 
-       $header = [
-           'Content-Type: application/json',
-           'Wikit-Semantics-API-Key: ' . $api_key,
-           'X-Wikit-Response-Format: json',
-           'X-Wikit-Organization-Id: ' . $this->fields['organization_id'],
-       ];
+    /**
+     * Stream the answer of an application as SSE events
+     *
+     * @param string $appType    One of the `APP_TYPE_*` constants
+     * @param string $appIdField Config field name for the app ID
+     * @param array  $dataToPost Data containing the query
+     * @return array{0: bool, 1: int} Whether at least one chunk of text was sent, and the HTTP code
+     *
+     * @throws \RuntimeException When the API cannot be reached
+     */
+   private function streamFrom(string $appType, string $appIdField, array $dataToPost): array {
+       // Workflow applications always stream: the stream mode parameter is only needed by the classic ones
+       $suffix = $appType === self::APP_TYPE_SEMANTICS ? '/query-executions?is_stream_mode=true' : '/query-executions';
+       $url = $this->getAPIUrl($this->getAppPath($appType, $appIdField, $suffix));
 
-       $ch = curl_init();
-       curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-       curl_setopt($ch, CURLOPT_URL, $url);
-       curl_setopt($ch, CURLOPT_HEADER, 0);
-       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-       curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-       curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
+       // A generated answer or article can take longer than 30 seconds
+       $ch = $this->initCurl($url, self::STREAM_MAX_DURATION);
        curl_setopt($ch, CURLOPT_POST, 1);
-       curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-       curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-
-       // Enable the use of a proxy server
-       if (!empty($CFG_GLPI["proxy_name"])) {
-           curl_setopt($ch, CURLOPT_PROXY, $proxy_host);
-          if ($proxy_ident) {
-              curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy_ident);
-          }
-       }
-
        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dataToPost));
 
-       // Use write function to process streaming data
+       // Process complete chunks ending with STOP as soon as they are received
        $buffer = '';
-       curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $data) use (&$buffer) {
+       $queryId = null;
+       $hasText = false;
+       curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($ch, $data) use (&$buffer, &$queryId, &$hasText) {
+           // The body of an HTTP error is not an answer: it is ignored, the caller handles the status
+          if ((int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE) >= 400) {
+              return strlen($data);
+          }
+
            $buffer .= $data;
-
-           // Process complete chunks ending with STOP
-         while (($pos = strpos($buffer, 'STOP')) !== false) {
-            $chunk = substr($buffer, 0, $pos);
-            $buffer = substr($buffer, $pos + 4); // Remove processed chunk + "STOP"
-
-            // The format from Wikit API is: data: {"queryId": "...", "chunk":"..."}STOP
-            // We need to extract the JSON part
-            $lines = explode("\n", trim($chunk));
-
-            foreach ($lines as $line) {
-                $line = trim($line);
-
-                // Look for lines starting with "data: "
-               if (strpos($line, 'data:') === 0) {
-                   // Remove "data:" prefix and trim spaces
-                   $jsonData = trim(substr($line, 5));
-                   $decoded = json_decode($jsonData, true);
-
-                  if ($decoded && isset($decoded['chunk'])) {
-                     // Send SSE event with the chunk (include queryId if present)
-                     $eventData = ['chunk' => $decoded['chunk']];
-                     if (isset($decoded['queryId'])) {
-                         $eventData['queryId'] = $decoded['queryId'];
-                     }
-                     echo "event: chunk\n";
-                     echo "data: " . json_encode($eventData) . "\n\n";
-
-                     // Force flush to send data immediately
-                     if (ob_get_level() > 0) {
-                        ob_flush();
-                     }
-                     flush();
-                  }
-               }
-            }
-         }
+           $hasText = $this->sendStreamedChunks($buffer, $queryId) || $hasText;
 
            return strlen($data);
        });
 
        $result = curl_exec($ch);
-       $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+       $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
       if ($result === false) {
           $error = curl_error($ch);
-          throw new \Exception("Streaming API call failed: " . $error);
+          PluginWikitsemanticsLogger::error("Streaming API call failed", ['error' => $error, 'url' => $url]);
+          throw new \RuntimeException('Streaming API call failed: ' . $error);
       }
+
+      if ($hasText) {
+          PluginWikitsemanticsLogger::debug("API call successful", ['http_code' => $httpCode, 'url' => $url]);
+      }
+
+       return [$hasText, $httpCode];
    }
 
     /**
-     * Execute API call to Wikit Semantics
+     * Send the complete chunks of the Wikit API stream as SSE events, and remove them from the buffer.
      *
-     * @param string $url API endpoint URL
-     * @param array $dataToPost Data to send in POST
-     * @return array Array containing 'httpCode', 'data', and optionally 'error'
+     * Events without text (workflow metadata) are not sent, their queryId is added to the next
+     * chunk: nothing is sent before the application answers with some text.
+     *
+     * @param string      $buffer  Data received from the API and not processed yet
+     * @param string|null $queryId queryId received in an event without text and not sent yet
+     * @return bool Whether at least one chunk of text was sent
      */
-   public function APICall($url, $dataToPost = null, $method = 'POST') {
+   private function sendStreamedChunks(string &$buffer, ?string &$queryId): bool {
+       $hasText = false;
+      foreach ($this->extractStreamEvents($buffer) as $eventData) {
+         if ($eventData['chunk'] === '') {
+             $queryId ??= $eventData['queryId'] ?? null;
+             continue;
+         }
+
+         if (!isset($eventData['queryId']) && $queryId !== null) {
+             $eventData['queryId'] = $queryId;
+         }
+
+          $hasText = true;
+
+          echo "event: chunk\n";
+          echo "data: " . json_encode($eventData) . "\n\n";
+
+          // Force flush to send data immediately
+         if (ob_get_level() > 0) {
+             ob_flush();
+         }
+          flush();
+      }
+
+       return $hasText;
+   }
+
+    /**
+     * Extract the complete events of the Wikit API stream, and remove them from the buffer.
+     *
+     * The format from Wikit API is: data: {"queryId": "...", "chunk":"..."}STOP
+     * Workflow applications also send keep-alive comments (": ping") and events without text.
+     *
+     * The delimiter is the "STOP" right after the closing brace of the JSON object, or right
+     * before the next event (invalid data), so that a "STOP" written in the generated text
+     * does not cut the event in two.
+     *
+     * @param string $buffer Data received from the API and not processed yet
+     * @return array<int, array{chunk: string, queryId?: string}>
+     */
+   private function extractStreamEvents(string &$buffer): array {
+       $events = [];
+       // Earliest delimiter: "}STOP" (the closing brace is kept) or "STOP" before the next event
+      while (preg_match('/^(.*?)(\}STOP|STOP(?=\s*data:))/s', $buffer, $matches) === 1) {
+          $chunk = $matches[1] . ($matches[2] === '}STOP' ? '}' : '');
+          $buffer = substr($buffer, strlen($matches[0])); // Remove processed chunk + delimiter
+
+         foreach (explode("\n", trim($chunk)) as $line) {
+             $line = trim($line);
+
+             // Look for lines starting with "data: "
+            if (strpos($line, 'data:') !== 0) {
+                continue;
+            }
+
+             $decoded = json_decode(trim(substr($line, 5)), true);
+            if (!is_array($decoded) || !isset($decoded['chunk']) || !is_string($decoded['chunk'])) {
+                continue;
+            }
+
+             // Chunk with the queryId if present
+             $eventData = ['chunk' => $decoded['chunk']];
+            if (isset($decoded['queryId']) && is_string($decoded['queryId'])) {
+                $eventData['queryId'] = $decoded['queryId'];
+            }
+
+             $events[] = $eventData;
+         }
+      }
+
+       return $events;
+   }
+
+    /**
+     * Path of an endpoint of the configured application
+     *
+     * @param string $appType    One of the `APP_TYPE_*` constants
+     * @param string $appIdField Config field name for the app ID
+     * @param string $suffix     Endpoint path after the application ID, starting with a slash
+     */
+   private function getAppPath(string $appType, string $appIdField, string $suffix): string {
+       return '/' . $appType . '/apps/' . rawurlencode($this->getStringField($appIdField)) . $suffix;
+   }
+
+    /**
+     * APIs to try for the configured application, in order.
+     *
+     * The type of an application (classic: `/semantics/`, workflow: `/semantics-workflow/`) cannot
+     * be read with an API key: the type that answered last time is tried first (classic when
+     * unknown), then the other one when the call fails in a way that may mean a wrong type
+     * (see `isWrongAppTypeStatus()`, empty answer of the workflow API). The type that answers
+     * is kept in the GLPI cache, so an application that changes of type is detected again.
+     *
+     * @param string $appIdField Config field name for the app ID
+     * @return string[] `APP_TYPE_*` constants
+     */
+   private function getAppTypesToTry(string $appIdField): array {
+       return $this->getAppType($appIdField) === self::APP_TYPE_WORKFLOW
+           ? [self::APP_TYPE_WORKFLOW, self::APP_TYPE_SEMANTICS]
+           : [self::APP_TYPE_SEMANTICS, self::APP_TYPE_WORKFLOW];
+   }
+
+    /**
+     * Type of the configured application that answered last time, kept in the GLPI cache
+     *
+     * @param string $appIdField Config field name for the app ID
+     * @return string|null One of the `APP_TYPE_*` constants, null when unknown
+     */
+   protected function getAppType(string $appIdField): ?string {
+       /** @var \Psr\SimpleCache\CacheInterface $GLPI_CACHE */
+       global $GLPI_CACHE;
+
+       $appId = $this->getStringField($appIdField);
+      if ($appId === '') {
+          return null;
+      }
+
+       $cacheKey = $this->getAppTypeCacheKey($appId);
+      if (isset($this->appTypes[$cacheKey])) {
+          return $this->appTypes[$cacheKey];
+      }
+
+       $appType = $GLPI_CACHE->get($cacheKey);
+      if (!in_array($appType, [self::APP_TYPE_SEMANTICS, self::APP_TYPE_WORKFLOW], true)) {
+          return null;
+      }
+
+       $this->appTypes[$cacheKey] = $appType;
+
+       return $appType;
+   }
+
+    /**
+     * Keep the type of the configured application for the next calls
+     *
+     * @param string $appIdField Config field name for the app ID
+     * @param string $appType    One of the `APP_TYPE_*` constants
+     */
+   private function rememberAppType(string $appIdField, string $appType): void {
+       /** @var \Psr\SimpleCache\CacheInterface $GLPI_CACHE */
+       global $GLPI_CACHE;
+
+       $appId = $this->getStringField($appIdField);
+      if ($appId === '') {
+          return;
+      }
+
+       $cacheKey = $this->getAppTypeCacheKey($appId);
+      if (($this->appTypes[$cacheKey] ?? null) === $appType) {
+          return;
+      }
+
+       $this->appTypes[$cacheKey] = $appType;
+       $GLPI_CACHE->set($cacheKey, $appType, self::APP_TYPE_CACHE_TTL);
+   }
+
+   private function getAppTypeCacheKey(string $appId): string {
+       return 'wikitsemantics_app_type_' . sha1($this->getStringField('url_api') . '|' . $appId);
+   }
+
+    /**
+     * Value of a configuration field as a string, empty when missing or not scalar
+     */
+   private function getStringField(string $name): string {
+       $value = $this->fields[$name] ?? null;
+
+       return is_scalar($value) ? (string)$value : '';
+   }
+
+    /**
+     * Log a failed call to the Wikit Semantics API.
+     *
+     * When the other API is tried next (application type unknown or changed), the failure is
+     * expected: it is logged as an information, not as a warning.
+     *
+     * @param array<string, mixed> $context
+     */
+   private function logFailedAttempt(string $message, array $context, bool $otherApiTriedNext): void {
+      if ($otherApiTriedNext) {
+          PluginWikitsemanticsLogger::info($message . ', trying the other API (classic or workflow)', $context);
+          return;
+      }
+
+       PluginWikitsemanticsLogger::warning($message, $context);
+   }
+
+    /**
+     * Whether an HTTP error may mean that the application is not of the type of the API called:
+     * the classic API answers with an error 500 for a workflow application. Authentication and
+     * rate limit errors are excluded.
+     */
+   private function isWrongAppTypeStatus(int $httpCode): bool {
+       return $httpCode >= 400 && !in_array($httpCode, [401, 403, 429], true);
+   }
+
+    /**
+     * Full URL of a Wikit Semantics API endpoint
+     *
+     * @param string $path Endpoint path, starting with a slash
+     */
+   private function getAPIUrl(string $path): string {
+       return rtrim($this->getStringField('url_api'), '/') . $path;
+   }
+
+    /**
+     * cURL handle for a call to the Wikit Semantics API: authentication headers, HTTPS only,
+     * GLPI proxy
+     *
+     * @param string $url     Full URL of the endpoint
+     * @param int    $timeout Maximum duration of the call, in seconds
+     * @return \CurlHandle
+     */
+   private function initCurl(string $url, int $timeout) {
        global $CFG_GLPI;
 
-      if ($method === 'POST' && !isset($dataToPost['query'])) {
-          $dataToPost = ['query' => 'Il fait beau aujourd\'hui ?'];
-      }
-
-       $proxy_host  = !empty($CFG_GLPI["proxy_name"]) ? ($CFG_GLPI["proxy_name"] . ":" . $CFG_GLPI["proxy_port"]) : false; // host:port
-       $proxy_ident = !empty($CFG_GLPI["proxy_user"]) ? ($CFG_GLPI["proxy_user"] . ":" .
-           (new GLPIKey())->decrypt($CFG_GLPI["proxy_passwd"])) : false; // username:password
-
-      if (substr($this->fields['url_api'], -1) == '/') {
-          $url = substr($this->fields['url_api'], 0, -1) . $url;
-      } else {
-          $url = $this->fields['url_api'] . $url;
-      }
-
        // Decrypt API key before use
-       $api_key = $this->fields['api_key'];
-      if (!empty($api_key) && strpos($api_key, 'encrypted:') === 0) {
+       $api_key = $this->getStringField('api_key');
+      if ($api_key !== '' && strpos($api_key, 'encrypted:') === 0) {
           $api_key = (new GLPIKey())->decrypt(substr($api_key, 10));
       }
 
-       $header =
-           [
-               'Content-Type: application/json',
-               'Wikit-Semantics-API-Key: ' . $api_key,
-               'X-Wikit-Response-Format: json',
-               'X-Wikit-Organization-Id: ' . $this->fields['organization_id'],
-           ];
-
        $ch = curl_init();
-       curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+       curl_setopt($ch, CURLOPT_HTTPHEADER, [
+           'Content-Type: application/json',
+           'Wikit-Semantics-API-Key: ' . $api_key,
+           'X-Wikit-Response-Format: json',
+           'X-Wikit-Organization-Id: ' . $this->getStringField('organization_id'),
+       ]);
        curl_setopt($ch, CURLOPT_URL, $url);
        curl_setopt($ch, CURLOPT_HEADER, 0);
        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
        curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
-       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-       curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+       curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+
+       // Enable the use of a proxy server
+      if (!empty($CFG_GLPI["proxy_name"])) {
+          curl_setopt($ch, CURLOPT_PROXY, $CFG_GLPI["proxy_name"] . ":" . $CFG_GLPI["proxy_port"]);
+         if (!empty($CFG_GLPI["proxy_user"])) {
+             curl_setopt(
+                 $ch,
+                 CURLOPT_PROXYUSERPWD,
+                 $CFG_GLPI["proxy_user"] . ":" . (new GLPIKey())->decrypt($CFG_GLPI["proxy_passwd"])
+             );
+         }
+      }
+
+       return $ch;
+   }
+
+    /**
+     * Execute API call to Wikit Semantics
+     *
+     * @param string $url API endpoint path
+     * @param array $dataToPost Data to send in POST
+     * @param string $method HTTP method (POST or GET)
+     * @param bool $logHttpErrors Whether HTTP errors are logged (the caller may log them itself)
+     * @return array Array containing 'httpCode', 'data', and optionally 'error'
+     */
+   public function APICall($url, $dataToPost = null, $method = 'POST', $logHttpErrors = true) {
+      if ($method === 'POST' && !isset($dataToPost['query'])) {
+          $dataToPost = ['query' => 'Il fait beau aujourd\'hui ?'];
+      }
+
+       $url = $this->getAPIUrl($url);
+       $ch = $this->initCurl($url, 30);
+       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
       if ($method === 'POST') {
           curl_setopt($ch, CURLOPT_POST, 1);
@@ -593,32 +1030,23 @@ class PluginWikitsemanticsConfig extends CommonDBTM
          }
       }
 
-       // Enable the use of a proxy server
-       if (!empty($CFG_GLPI["proxy_name"])) {
-           curl_setopt($ch, CURLOPT_PROXY, $proxy_host);
-          if ($proxy_ident) {
-              curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy_ident);
-          }
-       }
-
        $data = curl_exec($ch);
        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
        // Handle cURL errors
-       if ($data === false) {
-           $error = curl_error($ch);
-           curl_close($ch);
-           PluginWikitsemanticsLogger::error("API call failed (cURL)", ['error' => $error, 'url' => $url]);
-           return ['httpCode' => 0, 'data' => null, 'error' => $error];
-       }
+      if ($data === false) {
+          $error = curl_error($ch);
+          PluginWikitsemanticsLogger::error("API call failed (cURL)", ['error' => $error, 'url' => $url]);
+          return ['httpCode' => 0, 'data' => null, 'error' => $error];
+      }
 
-       curl_close($ch);
-
-       if ($httpCode >= 400) {
-           PluginWikitsemanticsLogger::warning("API returned HTTP error", ['http_code' => $httpCode, 'url' => $url]);
-       } else {
-           PluginWikitsemanticsLogger::debug("API call successful", ['http_code' => $httpCode, 'url' => $url]);
-       }
+      if ($httpCode >= 400) {
+         if ($logHttpErrors) {
+             PluginWikitsemanticsLogger::warning("API returned HTTP error", ['http_code' => $httpCode, 'url' => $url]);
+         }
+      } else {
+          PluginWikitsemanticsLogger::debug("API call successful", ['http_code' => $httpCode, 'url' => $url]);
+      }
 
        return ['httpCode' => $httpCode, 'data' => json_decode($data, 1)];
    }
@@ -634,7 +1062,7 @@ class PluginWikitsemanticsConfig extends CommonDBTM
           return $dataToPost;
       }
 
-       $dataToPost['query'] = $this->htmlToMarkdown($dataToPost['query']);
+       $dataToPost['query'] = self::htmlToMarkdown($dataToPost['query']);
 
        return $dataToPost;
    }
@@ -645,7 +1073,7 @@ class PluginWikitsemanticsConfig extends CommonDBTM
      * @param string $content HTML or text content
      * @return string Markdown/plain text content
      */
-   private function htmlToMarkdown($content) {
+   public static function htmlToMarkdown($content) {
        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
        $content = str_replace(["\r\n", "\r"], "\n", $content);
 
@@ -656,7 +1084,8 @@ class PluginWikitsemanticsConfig extends CommonDBTM
               return "\n\n" . str_repeat('#', (int)$matches[1]) . ' ' . trim(strip_tags($matches[2])) . "\n\n";
           }, $content);
           $content = preg_replace('/<li\b[^>]*>/i', "\n- ", $content);
-          $content = preg_replace('/<\/li>/i', "\n", $content);
+          // Each item starts on a new line: no empty line between the items
+          $content = preg_replace('/<\/li>/i', '', $content);
           $content = preg_replace('/<(strong|b)\b[^>]*>(.*?)<\/\1>/is', '**$2**', $content);
           $content = preg_replace('/<(em|i)\b[^>]*>(.*?)<\/\1>/is', '*$2*', $content);
           $content = preg_replace('/<code\b[^>]*>(.*?)<\/code>/is', '`$1`', $content);

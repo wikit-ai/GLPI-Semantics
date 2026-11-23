@@ -3,6 +3,32 @@
 All notable changes to the Wikit Semantics plugin will be documented in this file.
 
 
+## [2.2.0] - 2026-11-23
+
+Backport for GLPI 11 of the features and fixes of the version 3.1.0 (GLPI 12).
+
+### Added
+- Support of the Wikit Semantics workflow applications (`/semantics-workflow/` API), for the three features, without any configuration change. The type of an application cannot be read with an API key: the classic API is called first, then the workflow API when it fails with an HTTP error (other than authentication and rate limit errors), and the type that answers is kept in the GLPI cache for the next calls (24 hours). An application that changes of type is detected again (an empty answer of the workflow API leads to the classic API). Quoted sources are not available for workflow applications.
+- Ticket answer suggestion: the whole public conversation of the ticket (description, followups, tasks and solutions, in chronological order, with their author and date) is sent to the application as context, instead of the description only. Private followups and tasks are never sent; the oldest messages are omitted beyond 20,000 characters.
+
+### Changed
+- Performance: the Editor AI configuration is added to the GLPI pages (meta tag) instead of being loaded with an AJAX request on every page; the settings it needs are kept in the GLPI cache (cleared when the configuration is saved), so no database query is added to the pages
+- Performance: a single DOM observer for the answer buttons and the Knowledge Base tabs, no more polling while waiting for TinyMCE
+- Performance: the configuration is no longer read from the database each time the configuration class is instantiated (e.g. by the GLPI history and search), and the Profile tab no longer writes the plugin rights each time it is displayed
+- Logs: the expected failure of the first API tried while detecting the type of an application is logged as an information, not as a warning; debug entries (each successful API call) are only written in the GLPI debug mode
+- Streaming: an HTTP error of Wikit Semantics is now reported to the user instead of an empty answer
+
+### Fixed
+- Other GLPI pages no longer wait for the end of an AI generation (session lock released before calling Wikit Semantics)
+- Streaming: text no longer lost when an event is split between two network packets, nor when the generated text contains "STOP"
+- Streaming: generations longer than 30 seconds are no longer interrupted (limit raised to 180 seconds)
+- Answers and Editor AI results are inserted through the TinyMCE API: the textarea, the undo history and the required state of the field are updated
+- Editor AI assistant without streaming mode: an error was displayed instead of the result
+- Words with underscores (e.g. identifiers) no longer turned into italics in the streamed answers
+- Bulleted lists sent to Wikit Semantics without empty lines between the items
+
+
+
 ## [2.1.4] - 2026-10-07
 
 ### Fixed

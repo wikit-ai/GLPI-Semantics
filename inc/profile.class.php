@@ -38,15 +38,9 @@ class PluginWikitsemanticsProfile extends CommonDBTM
      */
    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0): bool {
       if ($item->getType() == 'Profile') {
-          $ID = $item->getID();
-          $prof = new self();
-
-          self::addDefaultProfileInfos($ID, [
-               'plugin_wikitsemantics_configs' => 0,
-               'plugin_wikitsemantics_knowledgebase' => 0,
-               'plugin_wikitsemantics_editorai' => 0,
-           ]);
-          $prof->showForm($ID);
+          // The rights exist for every profile: added on installation (`initProfile()`), and by GLPI
+          // when a profile is created. No need to check them each time the tab is displayed.
+          (new self())->showForm($item->getID());
       }
        return true;
    }
@@ -222,7 +216,9 @@ class PluginWikitsemanticsProfile extends CommonDBTM
            'FROM' => 'glpi_profilerights',
            'WHERE' => [
                'profiles_id' => $profileId,
-               'name' => ['LIKE', $DB->escape('%plugin_wikitsemantics%')],
+               // Exact names: in a LIKE pattern, "_" matches any character and the query
+               // builder already escapes the values (no need for `$DB->escape()`)
+               'name' => array_column(self::getAllRights(), 'field'),
            ],
        ]);
       foreach ($it as $prof) {

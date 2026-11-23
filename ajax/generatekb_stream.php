@@ -71,6 +71,12 @@ if (!$ticketContent) {
     return;
 }
 
+// New CSRF token for the next request of the client, created while the session can still be written
+$newToken = Session::getNewCSRFToken();
+
+// Release the session lock: the other requests of the user must not wait for the end of the stream
+Session::writeClose();
+
 // Send suggested title
 echo "event: title\n";
 echo "data: " . json_encode(['title' => $ticket->fields['name']]) . "\n\n";
@@ -87,8 +93,7 @@ try {
     flush();
 }
 
-// Send new CSRF token
-$newToken = Session::getNewCSRFToken();
+// Send the new CSRF token
 echo "event: csrf_token\n";
 echo "data: " . json_encode(['token' => $newToken]) . "\n\n";
 flush();

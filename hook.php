@@ -7,6 +7,8 @@
  * -------------------------------------------------------------------------
  */
 
+use Glpi\Plugin\Hooks;
+
 /**
  * Check plugin prerequisites before installation
  * @return boolean
@@ -167,6 +169,31 @@ function plugin_wikitsemantics_uninstall() {
     PluginWikitsemanticsProfile::removeRightsFromSession();
 
     return true;
+}
+
+/**
+ * Hook called after all the plugins are initialized, and their locales loaded.
+ *
+ * Adds the client configuration of the Editor AI assistant in the GLPI pages, so that the
+ * JavaScript does not need an AJAX request on every page.
+ *
+ * @return void
+ */
+function plugin_wikitsemantics_post_init() {
+    global $PLUGIN_HOOKS;
+
+   try {
+       $PLUGIN_HOOKS[Hooks::ADD_HEADER_TAG]['wikitsemantics'] = [[
+           'tag'        => 'meta',
+           'properties' => [
+               'name'    => PluginWikitsemanticsConfig::EDITOR_AI_CLIENT_CONFIG_META,
+               'content' => json_encode(PluginWikitsemanticsConfig::getEditorAIClientConfig()),
+           ],
+       ]];
+   } catch (\Throwable $throwable) {
+       // The JavaScript falls back to an AJAX request: the pages must never break because of the plugin
+       PluginWikitsemanticsLogger::error('Unable to add the Editor AI configuration to the page', ['error' => $throwable->getMessage()]);
+   }
 }
 
 /**

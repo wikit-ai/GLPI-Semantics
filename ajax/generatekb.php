@@ -59,6 +59,9 @@ if ($action === 'create_kb') {
         return;
     }
 
+    // Release the session lock: the other requests of the user must not wait for the API answer
+    Session::writeClose();
+
     $config = PluginWikitsemanticsConfig::getConfig();
     $apiResult = $config->getAPIAnswer(['query' => $ticketContent], 'app_id_kb');
 

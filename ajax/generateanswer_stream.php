@@ -61,9 +61,9 @@ if (!$ticket->canViewItem()) {
     return;
 }
 
-// Get ticket content
+// Whole public conversation of the ticket, as context for the application
 $generateAnswer = new PluginWikitsemanticsGenerateAnswer();
-$ticketContent = $generateAnswer->getTicketContent($ticketId);
+$ticketContent = $generateAnswer->getTicketConversation($ticketId);
 
 if (!$ticketContent) {
     echo "event: error\n";
@@ -71,6 +71,12 @@ if (!$ticketContent) {
     flush();
     return;
 }
+
+// New CSRF token for the next request of the client, created while the session can still be written
+$newToken = Session::getNewCSRFToken();
+
+// Release the session lock: the other requests of the user must not wait for the end of the stream
+Session::writeClose();
 
 // Get configuration
 $config = PluginWikitsemanticsConfig::getConfig();
@@ -84,8 +90,7 @@ try {
     flush();
 }
 
-// Send new CSRF token to client so it can be used for next request
-$newToken = Session::getNewCSRFToken();
+// Send the new CSRF token
 echo "event: csrf_token\n";
 echo "data: " . json_encode(['token' => $newToken]) . "\n\n";
 flush();

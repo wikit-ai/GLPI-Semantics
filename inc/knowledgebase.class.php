@@ -114,7 +114,10 @@ class PluginWikitsemanticsKnowledgebase extends CommonDBTM
           $content .= "Followups:\n";
          foreach ($followups as $fu) {
             // Skip private followups the current user is not allowed to see
-            if (!$followup->getFromDB($fu['id']) || !$followup->canViewItem()) {
+            // (same as getFromDB() without reading again the row already loaded by find())
+            $followup->getFromResultSet($fu);
+            $followup->post_getFromDB();
+            if (!$followup->canViewItem()) {
                 continue;
             }
             if (!empty($fu['content'])) {
@@ -151,7 +154,9 @@ class PluginWikitsemanticsKnowledgebase extends CommonDBTM
           $content .= "Tasks:\n";
          foreach ($tasks as $t) {
             // Skip private tasks the current user is not allowed to see
-            if (!$task->getFromDB($t['id']) || !$task->canViewItem()) {
+            $task->getFromResultSet($t);
+            $task->post_getFromDB();
+            if (!$task->canViewItem()) {
                 continue;
             }
             if (!empty($t['content'])) {

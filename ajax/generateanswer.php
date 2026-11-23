@@ -53,7 +53,8 @@ if (isset($_POST['ticketId'])) {
     }
 
     $generateAnswer = new PluginWikitsemanticsGenerateAnswer();
-    $ticketContent = $generateAnswer->getTicketContent($ticketId);
+    // Whole public conversation of the ticket, as context for the application
+    $ticketContent = $generateAnswer->getTicketConversation($ticketId);
 
     if (!$ticketContent) {
         echo "<div id='divanswer'>";
@@ -71,6 +72,9 @@ if (isset($_POST['ticketId'])) {
             ]
         );
     } else {
+        // Release the session lock: the other requests of the user must not wait for the API answer
+        Session::writeClose();
+
         $config = PluginWikitsemanticsConfig::getConfig();
         $apiResult = $config->getAPIAnswer(['query' => $ticketContent]);
 

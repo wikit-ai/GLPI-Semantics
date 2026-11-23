@@ -8,7 +8,7 @@
 
 use Glpi\Plugin\Hooks;
 
-define('PLUGIN_WIKITSEMANTICS_VERSION', '2.1.4');
+define('PLUGIN_WIKITSEMANTICS_VERSION', '2.2.0');
 // Minimal GLPI version, inclusive
 define("PLUGIN_WIKITSEMANTICS_MIN_GLPI_VERSION", "11.0.0");
 // Maximum GLPI version, exclusive
@@ -52,6 +52,9 @@ function plugin_init_wikitsemantics() {
          }
 
           $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['wikitsemantics'] = 'plugin_wikitsemantics_post_item_form';
+
+          // Editor AI configuration added to the pages once the locales are loaded
+          $PLUGIN_HOOKS[Hooks::POST_INIT]['wikitsemantics'] = 'plugin_wikitsemantics_post_init';
       }
    }
 }

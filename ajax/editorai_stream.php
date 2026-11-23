@@ -68,6 +68,12 @@ if (isset($languageMap[$action])) {
     $query = $action . ': ' . htmlspecialchars_decode($content);
 }
 
+// New CSRF token for the next request of the client, created while the session can still be written
+$newToken = Session::getNewCSRFToken();
+
+// Release the session lock: the other requests of the user must not wait for the end of the stream
+Session::writeClose();
+
 // Get configuration and call streaming API with editor app
 $config = PluginWikitsemanticsConfig::getConfig();
 
@@ -79,8 +85,7 @@ try {
     flush();
 }
 
-// Send new CSRF token
-$newToken = Session::getNewCSRFToken();
+// Send the new CSRF token
 echo "event: csrf_token\n";
 echo "data: " . json_encode(['token' => $newToken]) . "\n\n";
 flush();

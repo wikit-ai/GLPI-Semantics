@@ -55,8 +55,16 @@ class PluginWikitsemanticsLogger
         file_put_contents($this->logFile, $line, FILE_APPEND | LOCK_EX);
     }
 
+    /**
+     * Debug entries are written in the GLPI debug mode only: a line for each API call would
+     * make the log grow quickly
+     */
     public static function debug(string $message, array $context = []): void
     {
+        if (($_SESSION['glpi_use_mode'] ?? null) !== Session::DEBUG_MODE) {
+            return;
+        }
+
         self::getInstance()->log('DEBUG', $message, $context);
     }
 

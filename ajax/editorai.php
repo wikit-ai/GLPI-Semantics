@@ -40,11 +40,14 @@ if (isset($languageMap[$action])) {
     $query = $action . ': ' . htmlspecialchars_decode($content);
 }
 
+// Release the session lock: the other requests of the user must not wait for the API answer
+Session::writeClose();
+
 $config = PluginWikitsemanticsConfig::getConfig();
 $result = $config->getAPIAnswer(['query' => $query], 'app_id_editor');
 
 if ($result) {
-    $result = Glpi\RichText\RichText::getSafeHtml(nl2br($result));
+    $result = Glpi\RichText\RichText::getSafeHtml(nl2br($result['answer']));
     echo json_encode([
         'success' => true,
         'content' => $result,
